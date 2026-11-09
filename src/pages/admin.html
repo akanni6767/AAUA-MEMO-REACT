@@ -1,0 +1,2981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>AAUA MEMO </title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect x='5' y='3' width='15' height='21' rx='2.5' stroke='%23ffffff' stroke-width='1.7' fill='none'/%3E%3Cpath d='M9 8h7M9 12h7M9 16h4' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' fill='none'/%3E%3Cpath d='M20 15v8l3-2 3 2V15' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADlSURBVFhH7ZY7DsIwEET3lBwBcQBEEQgJCYkjoPQMlJ6B0hMQOQKNA0RBiURFQUC0pGVsmd1kPJOFBCl2NM+7K8sSBEEQHiCzXbd9BPAYfAE8B18A78FXwHfwHfAGvANPgAfgyf8AeApeAs/BC+Al8Ba8A14Cb8EL4Dl4DrwDXgJvwQvge/AV8B18B7wCfgE/gR/Ad+AL4Cv4BPgCPgA+gg8F9AHwHnwAb8F7wEfgI+AN8Aa8AV6At8A74A3wGLwDHgPvgMfAO+Ax8B/4D/wCfgE/gR/Ad+ALjwXif4Bf2OfV+uYB+Ap+At+Br+AngZcVX6/ZMhZSHpawAAAAAElFTkSuQmCC">
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --primary:          #0f172b;
+      --secondary:        #3b5fcf;
+      --bg-body:          #f5f9ff;
+      --bg-main:          #f8fafd;
+      --bg-card:          #ffffff;
+      --bg-sidebar:       #ffffff;
+      --bg-navbar:        #ffffff;
+      --border:           #eef2f8;
+      --border-card:      #ecf3fa;
+      --text-heading:     #0f172b;
+      --text-body:        #334155;
+      --text-muted:       #64748b;
+      --text-faint:       #94a3b8;
+      --nav-active-bg:    #f0f4fe;
+      --nav-hover-bg:     #f0f4fe;
+      --nav-sub-hover:    #f0f4fe;
+      --input-bg:         #f9fafc;
+      --input-border:     #e2e8f0;
+      --shadow-sidebar:   2px 0 24px rgba(0,0,0,0.04);
+      --shadow-avatar:    0 4px 10px rgba(0,0,0,0.08);
+    }
+    body.dark {
+      --bg-body:          #151517;
+      --bg-main:          #151517;
+      --bg-card:          #1e1e21;
+      --bg-sidebar:       #1a1a1d;
+      --bg-navbar:        #1a1a1d;
+      --border:           #2a2a2e;
+      --border-card:      #2a2a2e;
+      --text-heading:     #f1f5f9;
+      --text-body:        #cbd5e1;
+      --text-muted:       #94a3b8;
+      --text-faint:       #64748b;
+      --nav-active-bg:    rgba(255,255,255,0.07);
+      --nav-hover-bg:     rgba(255,255,255,0.05);
+      --nav-sub-hover:    rgba(255,255,255,0.06);
+      --input-bg:         #25252a;
+      --input-border:     #38383e;
+      --shadow-sidebar:   2px 0 24px rgba(0,0,0,0.3);
+      --shadow-avatar:    0 4px 10px rgba(0,0,0,0.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-body); overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 280px; height: 100%;
+      background: var(--bg-sidebar); box-shadow: var(--shadow-sidebar); z-index: 1050;
+      transform: translateX(0); transition: transform 0.3s cubic-bezier(0.2,0.9,0.4,1.1), background 0.3s;
+      border-right: 1px solid var(--border); padding: 2rem 1.5rem;
+      display: flex; flex-direction: column; gap: 2rem; overflow-y: auto;
+    }
+    @media (max-width: 767px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open-mobile { transform: translateX(0); }
+      .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1040; display: none; }
+      .mobile-overlay.active { display: block; }
+    }
+    @media (min-width: 768px) { .sidebar { transform: translateX(0) !important; } .mobile-overlay { display: none !important; } }
+
+    .sidebar-header { display: flex; align-items: center; gap: 12px; margin-bottom: 0.5rem; }
+    .sidebar-header i { font-size: 1.6rem; color: var(--primary); }
+    .sidebar-header h4 { font-size: 1.2rem; font-weight: 700; color: var(--text-heading); }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 0.5rem; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 0.97rem; font-weight: 500; color: var(--text-body);
+      padding: 0.6rem 0; cursor: pointer; border-radius: 12px;
+      transition: background 0.2s, color 0.2s, padding 0.2s;
+    }
+    .nav-item i { width: 24px; font-size: 1.15rem; color: var(--primary); transition: color 0.2s; }
+    .nav-item:hover { background: var(--nav-hover-bg); padding-left: 12px; margin-left: -12px; }
+    .nav-item.active { color: var(--text-heading); font-weight: 700; background: var(--nav-active-bg); padding-left: 12px; margin-left: -12px; }
+    .nav-item.active i { color: var(--secondary); }
+    .nav-item.nav-logout { color: #e63946; }
+    .nav-item.nav-logout i { color: #e63946 !important; }
+    .nav-item.nav-logout:hover { background: #fff0f1; }
+    body.dark .nav-item.nav-logout:hover { background: rgba(230,57,70,0.12); }
+
+    .nav-dropdown { display: flex; flex-direction: column; }
+    .nav-dropdown-trigger {
+      display: flex; align-items: center; gap: 14px; font-size: 0.97rem; font-weight: 500;
+      color: var(--text-body); padding: 0.6rem 0; cursor: pointer; border-radius: 12px;
+      transition: background 0.2s, color 0.2s, padding 0.2s; user-select: none;
+    }
+    .nav-dropdown-trigger:hover { background: var(--nav-hover-bg); padding-left: 12px; margin-left: -12px; }
+    .nav-dropdown-trigger i.nav-icon { width: 24px; font-size: 1.15rem; color: var(--primary); }
+    .nav-dropdown-trigger .chevron { margin-left: auto; font-size: 0.75rem; color: var(--text-faint); transition: transform 0.25s; }
+    .nav-dropdown.open .chevron { transform: rotate(180deg); }
+    .nav-dropdown-list {
+      overflow: hidden; max-height: 0; transition: max-height 0.3s ease, opacity 0.2s;
+      opacity: 0; display: flex; flex-direction: column; gap: 2px; padding-left: 38px;
+    }
+    .nav-dropdown.open .nav-dropdown-list { max-height: 300px; opacity: 1; }
+    .nav-sub-item {
+      display: flex; align-items: center; gap: 10px; font-size: 0.86rem; font-weight: 500;
+      color: var(--text-muted); padding: 7px 10px; border-radius: 10px; cursor: pointer; transition: 0.15s;
+    }
+    .nav-sub-item i { font-size: 0.82rem; color: var(--text-faint); width: 18px; }
+    .nav-sub-item:hover { background: var(--nav-sub-hover); color: var(--text-heading); }
+    .nav-sub-item:hover i { color: var(--secondary); }
+    .nav-sub-item.active { background: var(--nav-sub-hover); color: var(--text-heading); font-weight: 600; }
+    .nav-sub-item.active i { color: var(--secondary); }
+
+    .nav-unread-badge {
+      margin-left: auto; background: #e63946; color: white;
+      font-size: 0.65rem; font-weight: 700; border-radius: 40px;
+      padding: 2px 7px; min-width: 18px; text-align: center;
+    }
+
+    .sidebar-footer-note { font-size: 0.68rem; color: var(--text-faint); padding-bottom: 0.8rem; }
+
+    /* ── MAIN ── */
+    .main-content { transition: margin-left 0.2s, background 0.3s; min-height: 100vh; background: var(--bg-main); }
+    @media (min-width: 768px) { .main-content { margin-left: 280px; } }
+
+    .top-navbar {
+      background: var(--bg-navbar); padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1020; transition: background 0.3s;
+    }
+    .left-nav { display: flex; align-items: center; gap: 20px; flex: 1; position: relative; }
+    .hamburger-btn {
+      background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-heading);
+      display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 40px;
+    }
+    @media (min-width: 768px) { .hamburger-btn { display: none; } }
+    .center-logo { position: absolute; left: 50%; transform: translateX(-50%); transition: all 0.2s ease; }
+    @media (max-width: 767px) { .center-logo { position: static; transform: none; }  }
+    .navbar-wordmark { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .navbar-wordmark-name {
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      background-clip: text; -webkit-background-clip: text; color: transparent; transition: font-size 0.2s ease;
+    }
+    .avatar-circle {
+      background: linear-gradient(145deg, var(--primary), var(--secondary));
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: var(--shadow-avatar); flex-shrink: 0; overflow: hidden;
+    }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .avatar-circle i { font-size: 1.3rem; color: white; }
+
+    /* ── PAGE SWITCHING ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── DASHBOARD ── */
+    .dashboard-container { padding: 2rem; max-width: 1400px; }
+    .profile-hero {
+      background: var(--bg-card); border-radius: 28px; padding: 1.8rem 2rem;
+      margin-bottom: 2rem; display: flex; align-items: center; gap: 1.75rem; flex-wrap: wrap;
+      border: 1px solid var(--border-card); position: relative; overflow: hidden; transition: background 0.3s;
+    }
+    .profile-hero::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+      background-size: 200% auto; animation: shimmer 3s linear infinite;
+    }
+    @keyframes shimmer { 0%{background-position:0% center} 100%{background-position:200% center} }
+    .profile-avatar-large {
+      width: 90px; height: 90px; background: linear-gradient(125deg, var(--primary), var(--secondary));
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; overflow: hidden; border: 3px solid var(--border);
+    }
+    .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .profile-avatar-large i { font-size: 2.8rem; color: white; }
+    .profile-info { flex: 1; min-width: 220px; }
+    .user-name { font-size: 1.55rem; font-weight: 800; color: var(--text-heading); margin-bottom: 6px; }
+    .profile-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .profile-tag { font-size: 0.75rem; font-weight: 600; background: var(--nav-active-bg); color: var(--text-body); padding: 4px 14px; border-radius: 40px; display: inline-flex; align-items: center; gap: 6px; }
+    .profile-tag.dept { background: #e8f3ec; color: #2c7a4d; }
+    .profile-tag.fac  { background: #eff1ff; color: #4361ee; }
+    .profile-tag.dob  { background: #fff1e6; color: #c05700; }
+    body.dark .profile-tag.dept { background: rgba(44,122,77,0.18); color: #4ade80; }
+    body.dark .profile-tag.fac  { background: rgba(67,97,238,0.18); color: #818cf8; }
+    body.dark .profile-tag.dob  { background: rgba(192,87,0,0.18);  color: #fb923c; }
+    .profile-meta-row { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
+    .profile-meta-row span { display: flex; align-items: center; gap: 6px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+    .stat-card { border-radius: 28px; padding: 1.5rem 1.2rem; display: flex; align-items: center; justify-content: space-between; }
+    .stat-card.total-memo  { background: linear-gradient(135deg,#E8F3EC,#D7EADE); border-left: 5px solid #2C7A4D; }
+    .stat-card.opened-memo { background: linear-gradient(135deg,#FFF1E6,#FFE4D0); border-left: 5px solid #E67E22; }
+    .stat-card.unread-memo { background: linear-gradient(135deg,#FFEFEF,#FFE2E2); border-left: 5px solid #E63946; }
+    .stat-card.extra-card  { background: linear-gradient(135deg,#EFF1FF,#E3E8FF); border-left: 5px solid #4361EE; }
+    body.dark .stat-card.total-memo  { background: linear-gradient(135deg,rgba(44,122,77,0.2),rgba(44,122,77,0.1)); }
+    body.dark .stat-card.opened-memo { background: linear-gradient(135deg,rgba(230,126,34,0.2),rgba(230,126,34,0.1)); }
+    body.dark .stat-card.unread-memo { background: linear-gradient(135deg,rgba(230,57,70,0.2),rgba(230,57,70,0.1)); }
+    body.dark .stat-card.extra-card  { background: linear-gradient(135deg,rgba(67,97,238,0.2),rgba(67,97,238,0.1)); }
+    .stat-card h4 { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-number { font-size: 2.4rem; font-weight: 800; color: var(--text-heading); }
+    .stat-icon { background: rgba(15,23,43,0.1); width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 28px; }
+    body.dark .stat-icon { background: rgba(255,255,255,0.08); }
+    .stat-icon i { font-size: 1.8rem; color: var(--text-heading); }
+
+    .news-section { background: var(--bg-card); border-radius: 32px; padding: 1.8rem 2rem; border: 1px solid var(--border-card); transition: background 0.3s; }
+    .news-header { display: flex; align-items: center; gap: 12px; border-bottom: 2px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; color: var(--text-heading); }
+    .news-list { display: flex; flex-direction: column; gap: 1.2rem; }
+    .news-item { display: flex; gap: 1rem; align-items: flex-start; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+    .news-item:last-child { border-bottom: none; }
+    .news-badge { background: rgba(15,23,43,0.08); border-radius: 30px; padding: 4px 12px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; color: var(--text-body); }
+    body.dark .news-badge { background: rgba(255,255,255,0.08); }
+    .news-title { font-size: 0.9rem; font-weight: 600; color: var(--text-heading); margin-bottom: 2px; }
+    .news-meta { font-size: 0.8rem; color: var(--text-muted); }
+    footer { margin-top: 2rem; text-align: center; font-size: 0.75rem; color: var(--text-faint); padding-bottom: 1rem; }
+
+    /* ── SHARED SETTINGS/CARD STYLES ── */
+    .settings-container { padding: 2rem; max-width: 900px; }
+    .settings-header { margin-bottom: 2rem; }
+    .settings-header h1 { font-size: 1.6rem; font-weight: 800; color: var(--text-heading); display: flex; align-items: center; gap: 10px; }
+    .settings-header h1 i { color: var(--secondary); }
+    .settings-header p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    .settings-tabs { display: flex; gap: 8px; margin-bottom: 2rem; flex-wrap: wrap; }
+    .stab { padding: 8px 20px; border-radius: 40px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--input-border); color: var(--text-muted); background: var(--bg-card); transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+    .stab:hover { border-color: var(--secondary); color: var(--secondary); }
+    .stab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .settings-panel { display: none; }
+    .settings-panel.active { display: block; }
+
+    .settings-card { background: var(--bg-card); border-radius: 24px; padding: 1.8rem 2rem; border: 1px solid var(--border-card); margin-bottom: 1.5rem; transition: background 0.3s; }
+    .settings-card h3 { font-size: 1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; }
+    .settings-card h3 i { color: var(--secondary); font-size: 1rem; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; }
+    .form-group label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 11px 16px; border: 1.5px solid var(--input-border); border-radius: 16px;
+      font-size: 0.9rem; font-family: 'Inter', sans-serif; background: var(--input-bg);
+      color: var(--text-heading); outline: none; transition: border-color 0.15s, background 0.3s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--secondary); }
+    .form-group input[readonly] { opacity: 0.5; cursor: not-allowed; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .avatar-upload-row { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .avatar-upload-circle { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--border); flex-shrink: 0; }
+    .avatar-upload-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .avatar-upload-circle i { font-size: 2rem; color: white; }
+    .avatar-select-btn { padding: 10px 22px; border: 1.5px solid var(--input-border); border-radius: 40px; background: var(--input-bg); font-size: 0.85rem; font-weight: 600; color: var(--text-body); cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .avatar-select-btn:hover { border-color: var(--secondary); color: var(--secondary); background: var(--nav-active-bg); }
+
+    .avatar-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); z-index: 4000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .avatar-modal-overlay.open { opacity: 1; pointer-events: all; }
+    .avatar-modal { background: var(--bg-card); border-radius: 28px; padding: 2rem; max-width: 420px; width: 92%; box-shadow: 0 32px 64px rgba(0,0,0,0.25); transform: scale(0.94); transition: transform 0.25s; }
+    .avatar-modal-overlay.open .avatar-modal { transform: scale(1); }
+    .avatar-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem; }
+    .avatar-modal-header h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 8px; }
+    .avatar-modal-header h3 i { color: var(--secondary); }
+    .avatar-modal-close { background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+    .avatar-modal-close:hover { background: var(--nav-hover-bg); color: var(--text-heading); }
+    .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .avatar-option { width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; border: 3px solid transparent; cursor: pointer; transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .avatar-option img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
+    .avatar-option:hover { transform: scale(1.07); box-shadow: 0 6px 18px rgba(0,0,0,0.15); }
+    .avatar-option.selected { border-color: var(--secondary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--secondary) 25%, transparent); }
+
+    .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .color-field { display: flex; flex-direction: column; gap: 6px; }
+    .color-field label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+    .color-input-row { display: flex; align-items: center; gap: 10px; }
+    .color-swatch { width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--input-border); cursor: pointer; flex-shrink: 0; padding: 2px; background: none; }
+    .color-hex { padding: 8px 12px; border: 1.5px solid var(--input-border); border-radius: 12px; font-size: 0.82rem; font-family: 'Inter', sans-serif; width: 110px; background: var(--input-bg); color: var(--text-heading); outline: none; }
+    .color-hex:focus { border-color: var(--secondary); }
+
+    .preset-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .preset-chip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 40px; border: 2px solid var(--input-border); cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.15s; background: var(--input-bg); color: var(--text-body); }
+    .preset-chip:hover { border-color: var(--secondary); }
+    .preset-chip.selected { border-color: var(--secondary); background: var(--nav-active-bg); color: var(--secondary); }
+    .preset-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+
+    .theme-preview-bar { height: 48px; border-radius: 16px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; padding: 0 1.2rem; gap: 12px; margin-top: 1rem; }
+    .preview-label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 0; border-bottom: 1px solid var(--border); }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info { flex: 1; }
+    .toggle-info strong { font-size: 0.9rem; color: var(--text-heading); display: block; }
+    .toggle-info span { font-size: 0.78rem; color: var(--text-muted); }
+    .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--input-border); border-radius: 40px; cursor: pointer; transition: 0.3s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+    .toggle-switch input:checked + .toggle-slider { background: var(--secondary); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    .settings-save-btn { background: var(--primary); color: white; border: none; padding: 12px 28px; border-radius: 40px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: opacity 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .settings-save-btn:hover { opacity: 0.88; }
+    .settings-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .success-toast { position: fixed; bottom: 24px; right: 24px; background: var(--primary); color: white; padding: 12px 22px; border-radius: 40px; font-size: 0.85rem; font-weight: 600; z-index: 9999; opacity: 0; transform: translateY(12px); transition: all 0.3s; pointer-events: none; }
+    .success-toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── CREATE USER ── */
+    .create-user-container { padding: 2rem; max-width: 860px; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-size: 1.6rem; font-weight: 800; color: var(--text-heading); display: flex; align-items: center; gap: 10px; }
+    .page-header h1 i { color: var(--secondary); }
+    .page-header p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    .account-type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 0.5rem; }
+    @media (max-width: 600px) { .account-type-grid { grid-template-columns: repeat(2, 1fr); } }
+    .account-type-card { border: 2px solid var(--input-border); border-radius: 18px; padding: 1rem 0.8rem 0.9rem; cursor: pointer; text-align: center; transition: 0.2s; background: var(--input-bg); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .account-type-card:hover { border-color: var(--secondary); background: var(--nav-active-bg); }
+    .account-type-card.selected { border-color: var(--secondary); background: var(--nav-active-bg); }
+    .account-type-card.selected .at-icon { background: var(--secondary); }
+    .at-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--input-border); display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .at-icon i { font-size: 1.1rem; color: white; }
+    .at-label { font-size: 0.82rem; font-weight: 700; color: var(--text-heading); }
+    .at-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; }
+
+    .pwd-strength-bar { height: 4px; border-radius: 40px; background: var(--input-border); margin-top: 8px; overflow: hidden; }
+    .pwd-strength-fill { height: 100%; border-radius: 40px; width: 0%; transition: width 0.3s, background 0.3s; }
+    .pwd-strength-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+    .cu-result { border-radius: 16px; padding: 14px 18px; font-size: 0.85rem; font-weight: 600; display: none; align-items: center; gap: 10px; margin-top: 1rem; }
+    .cu-result.show { display: flex; }
+    .cu-result.success { background: #e8f3ec; color: #2c7a4d; border: 1px solid #b7dfc6; }
+    .cu-result.error   { background: #ffefef; color: #c0392b; border: 1px solid #f5b7b7; }
+    body.dark .cu-result.success { background: rgba(44,122,77,0.15); border-color: rgba(44,122,77,0.3); }
+    body.dark .cu-result.error   { background: rgba(192,57,43,0.15); border-color: rgba(192,57,43,0.3); }
+
+    .show-pwd-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 0 4px; font-size: 0.9rem; }
+    .pwd-input-wrap { position: relative; }
+    .pwd-input-wrap input { width: 100%; padding-right: 44px; }
+    .pwd-input-wrap .show-pwd-btn { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
+
+    /* ── MANAGE USERS ── */
+    .manage-users-container { padding: 2rem; max-width: 1100px; }
+    .mu-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .mu-search-wrap { flex: 1; min-width: 220px; position: relative; }
+    .mu-search-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-size: 0.9rem; }
+    .mu-search-wrap input { width: 100%; padding: 10px 16px 10px 38px; border: 1.5px solid var(--input-border); border-radius: 40px; font-size: 0.88rem; font-family: 'Inter', sans-serif; background: var(--bg-card); color: var(--text-heading); outline: none; transition: border-color 0.15s; }
+    .mu-search-wrap input:focus { border-color: var(--secondary); }
+    .mu-filter-select { padding: 10px 16px; border: 1.5px solid var(--input-border); border-radius: 40px; font-size: 0.88rem; font-family: 'Inter', sans-serif; background: var(--bg-card); color: var(--text-heading); outline: none; cursor: pointer; }
+    .mu-count { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; }
+    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+    .user-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 20px; padding: 1.2rem 1.4rem; display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.2s; }
+    .user-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.07); }
+    .user-card-top { display: flex; align-items: center; gap: 12px; }
+    .user-card-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .user-card-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .user-card-avatar i { font-size: 1.3rem; color: white; }
+    .user-card-name { font-size: 0.95rem; font-weight: 700; color: var(--text-heading); }
+    .user-card-email { font-size: 0.78rem; color: var(--text-muted); margin-top: 1px; }
+    .acct-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 40px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .acct-badge.staff { background: #eff1ff; color: #4361ee; }
+    .acct-badge.hod   { background: #fff1e6; color: #c05700; }
+    .acct-badge.dean  { background: #e8f3ec; color: #2c7a4d; }
+    .acct-badge.vc    { background: #fef9ec; color: #b45309; }
+    body.dark .acct-badge.staff { background: rgba(67,97,238,0.18); color: #818cf8; }
+    body.dark .acct-badge.hod   { background: rgba(192,87,0,0.18); color: #fb923c; }
+    body.dark .acct-badge.dean  { background: rgba(44,122,77,0.18); color: #4ade80; }
+    body.dark .acct-badge.vc    { background: rgba(180,83,9,0.18); color: #fbbf24; }
+    .user-card-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px; }
+    .user-card-meta span { display: flex; align-items: center; gap: 6px; }
+    .user-card-meta i { width: 14px; color: var(--text-faint); }
+    .user-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; border-top: 1px solid var(--border); padding-top: 10px; }
+    .uca-btn { flex: 1; min-width: 80px; padding: 7px 10px; border-radius: 12px; border: none; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .uca-btn.edit   { background: var(--nav-active-bg); color: var(--secondary); }
+    .uca-btn.edit:hover { background: var(--secondary); color: white; }
+    .uca-btn.delete { background: #fff0f1; color: #e63946; }
+    .uca-btn.delete:hover { background: #e63946; color: white; }
+    body.dark .uca-btn.delete { background: rgba(230,57,70,0.12); }
+    .mu-empty { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+    .mu-empty i { font-size: 3rem; color: var(--text-faint); margin-bottom: 1rem; display: block; }
+    .mu-loading { text-align: center; padding: 3rem; color: var(--text-muted); }
+
+    /* ── EDIT USER MODAL ── */
+    .edit-user-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 5000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .edit-user-modal-overlay.open { opacity: 1; pointer-events: all; }
+    .edit-user-modal { background: var(--bg-card); border-radius: 28px; max-width: 520px; width: 94%; padding: 2rem; max-height: 90vh; overflow-y: auto; box-shadow: 0 32px 64px rgba(0,0,0,0.25); transform: scale(0.94); transition: transform 0.25s; }
+    .edit-user-modal-overlay.open .edit-user-modal { transform: scale(1); }
+    .eum-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem; }
+    .eum-header h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 8px; }
+    .eum-header h3 i { color: var(--secondary); }
+    .eum-close { background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+    .eum-close:hover { background: var(--nav-hover-bg); color: var(--text-heading); }
+
+    .del-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 6000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .del-modal-overlay.open { opacity: 1; pointer-events: all; }
+    .del-modal { background: var(--bg-card); border-radius: 24px; max-width: 400px; width: 92%; padding: 2rem; text-align: center; box-shadow: 0 32px 64px rgba(0,0,0,0.25); transform: scale(0.94); transition: transform 0.25s; }
+    .del-modal-overlay.open .del-modal { transform: scale(1); }
+    .del-modal-icon { font-size: 2.5rem; color: #e63946; margin-bottom: 1rem; }
+    .del-modal h3 { font-size: 1.1rem; font-weight: 800; color: var(--text-heading); margin-bottom: 8px; }
+    .del-modal p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .del-modal-actions { display: flex; gap: 10px; }
+    .del-modal-actions button { flex: 1; padding: 12px; border-radius: 40px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
+    .del-btn-cancel { background: var(--input-bg); color: var(--text-body); border: 1.5px solid var(--input-border) !important; }
+    .del-btn-confirm { background: #e63946; color: white; }
+    .del-btn-confirm:hover { background: #c0392b; }
+
+    /* ── CREATE MEMO ── */
+    .create-memo-container { padding: 2rem; max-width: 900px; }
+    .recipient-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .rtab { padding: 8px 18px; border-radius: 40px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--input-border); color: var(--text-muted); background: var(--bg-card); transition: 0.2s; display: flex; align-items: center; gap: 7px; }
+    .rtab:hover { border-color: var(--secondary); color: var(--secondary); }
+    .rtab.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+    .rtab i { font-size: 0.82rem; }
+    .recipient-panel { display: none; margin-top: 0.6rem; }
+    .recipient-panel.active { display: block; }
+
+    .fcheck-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px; border: 1.5px solid var(--input-border); background: var(--input-bg); cursor: pointer; transition: 0.15s; }
+    .fcheck-item:hover { border-color: var(--secondary); }
+    .fcheck-item.checked { border-color: var(--secondary); background: var(--nav-active-bg); }
+    .fcheck-item input { display: none; }
+    .fcheck-box { width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--input-border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: 0.15s; background: var(--bg-card); }
+    .fcheck-item.checked .fcheck-box { background: var(--secondary); border-color: var(--secondary); }
+    .fcheck-item.checked .fcheck-box::after { content: '✓'; font-size: 0.7rem; color: white; font-weight: 900; }
+    .fcheck-label { font-size: 0.82rem; font-weight: 500; color: var(--text-body); }
+    .faculty-check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+
+    .dept-cascade { display: flex; flex-direction: column; gap: 12px; }
+    .dept-cascade-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .dept-cascade-row { grid-template-columns: 1fr; } }
+    .dept-cascade select { padding: 11px 16px; border: 1.5px solid var(--input-border); border-radius: 16px; font-size: 0.9rem; font-family: 'Inter', sans-serif; background: var(--input-bg); color: var(--text-heading); outline: none; cursor: pointer; transition: border-color 0.15s; }
+    .dept-cascade select:focus { border-color: var(--secondary); }
+    .dept-cascade label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block; }
+    #deptMatchInfo2 { font-size: 0.8rem; color: var(--text-muted); padding: 8px 0; display: flex; align-items: center; gap: 6px; }
+
+    .manual-search-wrap { position: relative; margin-bottom: 10px; }
+    .manual-search-bar { display: flex; align-items: center; background: var(--bg-card); border: 2px solid var(--input-border); border-radius: 40px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+    .manual-search-bar:focus-within { border-color: var(--secondary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary) 15%, transparent); }
+    .manual-search-icon { padding: 0 14px 0 18px; font-size: 0.9rem; color: var(--text-faint); flex-shrink: 0; transition: color 0.2s; }
+    .manual-search-bar:focus-within .manual-search-icon { color: var(--secondary); }
+    .manual-search-input { flex: 1; border: none; outline: none; background: transparent; font-size: 0.92rem; font-family: 'Inter', sans-serif; color: var(--text-heading); padding: 13px 0; }
+    .manual-search-input::placeholder { color: var(--text-faint); }
+    .manual-search-clear { background: none; border: none; cursor: pointer; color: var(--text-faint); padding: 0 16px; font-size: 0.9rem; transition: color 0.15s; display: none; align-items: center; }
+    .manual-search-clear:hover { color: #e63946; }
+    .manual-search-clear.visible { display: flex; }
+
+    .user-pick-dropdown { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200; background: var(--bg-card); border: 1.5px solid var(--input-border); border-radius: 16px; max-height: 260px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: none; }
+    .user-pick-dropdown.open { display: block; }
+    .pick-user-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--border); }
+    .pick-user-item:last-child { border-bottom: none; }
+    .pick-user-item:hover { background: var(--nav-hover-bg); }
+    .pick-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+    .pick-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .pick-avatar i { font-size: 0.9rem; color: white; }
+    .pick-info { flex: 1; min-width: 0; }
+    .pick-name { font-size: 0.85rem; font-weight: 600; color: var(--text-heading); }
+    .pick-email { font-size: 0.72rem; color: var(--text-muted); }
+    .pick-source-tag { font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 40px; background: var(--input-border); color: var(--text-muted); margin-left: auto; white-space: nowrap; }
+
+    .selected-recipients { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; min-height: 10px; }
+    .recip-chip { display: inline-flex; align-items: center; gap: 7px; background: var(--nav-active-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 4px 12px 4px 8px; font-size: 0.78rem; font-weight: 600; color: var(--text-heading); }
+    .recip-chip-avatar { width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .recip-chip-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .recip-chip-avatar i { font-size: 0.55rem; color: white; }
+    .recip-chip-remove { cursor: pointer; color: var(--text-muted); font-size: 0.8rem; line-height: 1; }
+    .recip-chip-remove:hover { color: #e63946; }
+
+    .priority-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .priority-card { flex: 1; min-width: 90px; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--input-border); background: var(--input-bg); cursor: pointer; text-align: center; transition: 0.15s; }
+    .priority-card:hover { border-color: var(--secondary); }
+    .priority-card.selected { border-color: var(--secondary); background: var(--nav-active-bg); }
+    .priority-card i { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+    .priority-card span { font-size: 0.78rem; font-weight: 700; color: var(--text-heading); }
+    .priority-card.low i { color: #2c7a4d; }
+    .priority-card.normal i { color: #4361ee; }
+    .priority-card.high i { color: #e67e22; }
+    .priority-card.urgent i { color: #e63946; }
+
+    .memo-body-area { width: 100%; min-height: 200px; padding: 14px 16px; border: 1.5px solid var(--input-border); border-radius: 16px; font-size: 0.92rem; font-family: 'Inter', sans-serif; background: var(--input-bg); color: var(--text-heading); outline: none; resize: vertical; transition: border-color 0.15s, background 0.3s; line-height: 1.6; }
+    .memo-body-area:focus { border-color: var(--secondary); }
+    .memo-toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .memo-tool-btn { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 5px 10px; font-size: 0.82rem; cursor: pointer; color: var(--text-body); transition: 0.15s; }
+    .memo-tool-btn:hover { background: var(--nav-hover-bg); color: var(--text-heading); border-color: var(--secondary); }
+
+    .memo-result { border-radius: 16px; padding: 14px 18px; font-size: 0.85rem; font-weight: 600; display: none; align-items: center; gap: 10px; margin-top: 1rem; }
+    .memo-result.show { display: flex; }
+    .memo-result.success { background: #e8f3ec; color: #2c7a4d; border: 1px solid #b7dfc6; }
+    .memo-result.error   { background: #ffefef; color: #c0392b; border: 1px solid #f5b7b7; }
+    body.dark .memo-result.success { background: rgba(44,122,77,0.15); border-color: rgba(44,122,77,0.3); }
+    body.dark .memo-result.error   { background: rgba(192,57,43,0.15); border-color: rgba(192,57,43,0.3); }
+
+    .recip-count-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 40px; font-size: 0.78rem; font-weight: 600; background: var(--nav-active-bg); color: var(--secondary); margin-top: 8px; }
+
+    /* ══ INBOX / OUTBOX ══ */
+    .inbox-container { padding: 2rem; max-width: 1000px; }
+    .outbox-container { padding: 2rem; max-width: 1000px; }
+
+    .memo-filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .mftab { padding: 9px 20px; border-radius: 40px; font-size: 0.83rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--input-border); color: var(--text-muted); background: var(--bg-card); transition: 0.2s; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .mftab:hover { border-color: var(--secondary); color: var(--secondary); }
+    .mftab.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+    .mftab i { font-size: 0.82rem; }
+    .mftab .tab-count { background: rgba(255,255,255,0.28); color: inherit; font-size: 0.7rem; font-weight: 700; border-radius: 40px; padding: 1px 7px; min-width: 20px; text-align: center; }
+    .mftab:not(.active) .tab-count { background: var(--input-border); color: var(--text-muted); }
+
+    .memo-list-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 1.2rem; flex-wrap: wrap; }
+    .memo-search-wrap { flex: 1; min-width: 200px; position: relative; }
+    .memo-search-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-size: 0.85rem; }
+    .memo-search-wrap input { width: 100%; padding: 9px 14px 9px 36px; border: 1.5px solid var(--input-border); border-radius: 40px; font-size: 0.85rem; font-family: 'Inter', sans-serif; background: var(--bg-card); color: var(--text-heading); outline: none; transition: border-color 0.15s; }
+    .memo-search-wrap input:focus { border-color: var(--secondary); }
+    .memo-sort-select { padding: 9px 14px; border: 1.5px solid var(--input-border); border-radius: 40px; font-size: 0.85rem; font-family: 'Inter', sans-serif; background: var(--bg-card); color: var(--text-heading); outline: none; cursor: pointer; }
+    .memo-count-label { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+
+    .memo-list { display: flex; flex-direction: column; gap: 0; }
+    .memo-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 0; padding: 0; transition: background 0.2s; overflow: hidden; }
+    .memo-card:first-child { border-radius: 20px 20px 0 0; }
+    .memo-card:last-child  { border-radius: 0 0 20px 20px; }
+    .memo-card:first-child:last-child { border-radius: 20px; }
+    .memo-card + .memo-card { border-top: none; }
+
+    .memo-card-header { display: flex; align-items: center; gap: 12px; padding: 1rem 1.4rem; cursor: pointer; transition: background 0.15s; user-select: none; }
+    .memo-card-header:hover { background: var(--nav-hover-bg); }
+    .memo-card.unread .memo-card-header { background: color-mix(in srgb, var(--secondary) 5%, var(--bg-card)); }
+    .memo-card.unread .memo-card-header:hover { background: color-mix(in srgb, var(--secondary) 10%, var(--bg-card)); }
+
+    .unread-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--secondary); flex-shrink: 0; transition: opacity 0.3s; }
+    .memo-card:not(.unread) .unread-dot { opacity: 0; }
+
+    .memo-card-sender-avatar { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .memo-card-sender-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .memo-card-sender-avatar i { font-size: 1rem; color: white; }
+
+    .memo-card-header-info { flex: 1; min-width: 0; }
+    .memo-card-header-top { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap; }
+    .memo-card-from { font-size: 0.88rem; font-weight: 700; color: var(--text-heading); white-space: nowrap; }
+    .memo-card.unread .memo-card-from { color: var(--secondary); }
+    .memo-card-subject { font-size: 0.85rem; color: var(--text-body); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .memo-card.unread .memo-card-subject { font-weight: 600; color: var(--text-heading); }
+    .memo-card-date { font-size: 0.73rem; color: var(--text-faint); white-space: nowrap; }
+    .memo-card-preview { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+    .priority-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 40px; font-size: 0.68rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+    .priority-badge.low    { background: #e8f3ec; color: #2c7a4d; }
+    .priority-badge.normal { background: #eff1ff; color: #4361ee; }
+    .priority-badge.high   { background: #fff1e6; color: #c05700; }
+    .priority-badge.urgent { background: #ffefef; color: #e63946; }
+    body.dark .priority-badge.low    { background: rgba(44,122,77,0.18); }
+    body.dark .priority-badge.normal { background: rgba(67,97,238,0.18); }
+    body.dark .priority-badge.high   { background: rgba(192,87,0,0.18); }
+    body.dark .priority-badge.urgent { background: rgba(230,57,70,0.18); }
+
+    .expand-chevron { font-size: 0.8rem; color: var(--text-faint); transition: transform 0.25s; flex-shrink: 0; margin-left: 4px; }
+    .memo-card.expanded .expand-chevron { transform: rotate(180deg); }
+
+    .memo-card-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s; opacity: 0; }
+    .memo-card.expanded .memo-card-body { max-height: 1000px; opacity: 1; }
+
+    .memo-card-body-inner { padding: 0 1.4rem 1.4rem; border-top: 1px solid var(--border); }
+
+    .memo-meta-row { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.78rem; color: var(--text-muted); padding: 0.9rem 0; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    .memo-meta-row span { display: flex; align-items: center; gap: 5px; }
+    .memo-meta-row i { color: var(--text-faint); }
+
+    .memo-body-text { font-size: 0.9rem; color: var(--text-body); line-height: 1.75; white-space: pre-wrap; word-break: break-word; }
+
+    .memo-card-actions-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .mca-btn { padding: 7px 16px; border-radius: 12px; border: 1.5px solid var(--input-border); font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: 0.15s; display: flex; align-items: center; gap: 6px; background: var(--input-bg); color: var(--text-body); }
+    .mca-btn:hover { border-color: var(--secondary); color: var(--secondary); background: var(--nav-active-bg); }
+    .mca-btn.danger:hover { border-color: #e63946; color: #e63946; background: #fff0f1; }
+    body.dark .mca-btn.danger:hover { background: rgba(230,57,70,0.1); }
+    .mca-btn.primary { background: var(--secondary); color: white; border-color: var(--secondary); }
+    .mca-btn.primary:hover { opacity: 0.85; }
+
+    .confidential-banner { background: linear-gradient(135deg, #fef9ec, #fff8dc); border: 1px solid #f4c542; border-radius: 12px; padding: 10px 16px; font-size: 0.8rem; font-weight: 600; color: #92400e; display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+    body.dark .confidential-banner { background: rgba(180,83,9,0.12); border-color: rgba(180,83,9,0.3); color: #fbbf24; }
+
+    .ack-banner { background: linear-gradient(135deg, #eff1ff, #e3e8ff); border: 1px solid #a5b4fc; border-radius: 12px; padding: 10px 16px; font-size: 0.8rem; font-weight: 600; color: #3730a3; display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+    body.dark .ack-banner { background: rgba(67,97,238,0.12); border-color: rgba(67,97,238,0.3); color: #818cf8; }
+
+    .memo-empty { text-align: center; padding: 4rem 2rem; color: var(--text-muted); background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-card); }
+    .memo-empty i { font-size: 3rem; color: var(--text-faint); margin-bottom: 1rem; display: block; }
+    .memo-empty h3 { font-size: 1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 6px; }
+    .memo-empty p { font-size: 0.85rem; }
+
+    .outbox-recip-count { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 40px; font-size: 0.68rem; font-weight: 700; }
+    .status-badge.sent  { background: #e8f3ec; color: #2c7a4d; }
+    .status-badge.draft { background: #fff1e6; color: #c05700; }
+    body.dark .status-badge.sent  { background: rgba(44,122,77,0.18); }
+    body.dark .status-badge.draft { background: rgba(192,87,0,0.18); }
+
+    .memo-loading { text-align: center; padding: 3rem; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .memo-loading i { font-size: 1.8rem; color: var(--text-faint); }
+
+    /* ══ ANALYTICS ══ */
+    .analytics-container { padding: 2rem; max-width: 1000px; }
+    .analytics-memo-list { display: flex; flex-direction: column; gap: 0; }
+    .analytics-memo-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 0; overflow: hidden; transition: background 0.2s; }
+    .analytics-memo-card:first-child { border-radius: 20px 20px 0 0; }
+    .analytics-memo-card:last-child  { border-radius: 0 0 20px 20px; }
+    .analytics-memo-card:first-child:last-child { border-radius: 20px; }
+    .analytics-memo-card + .analytics-memo-card { border-top: none; }
+
+    .analytics-card-header { display: flex; align-items: center; gap: 14px; padding: 1rem 1.4rem; cursor: pointer; transition: background 0.15s; user-select: none; }
+    .analytics-card-header:hover { background: var(--nav-hover-bg); }
+
+    .analytics-subject { font-size: 0.92rem; font-weight: 700; color: var(--text-heading); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .analytics-date { font-size: 0.73rem; color: var(--text-faint); white-space: nowrap; }
+
+    .view-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 40px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+    .view-pill.zero  { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--input-border); }
+    .view-pill.some  { background: #eff1ff; color: #4361ee; border: 1px solid #c7d2fe; }
+    .view-pill.many  { background: #e8f3ec; color: #2c7a4d; border: 1px solid #b7dfc6; }
+    body.dark .view-pill.some { background: rgba(67,97,238,0.18); border-color: rgba(67,97,238,0.3); }
+    body.dark .view-pill.many { background: rgba(44,122,77,0.18); border-color: rgba(44,122,77,0.3); }
+
+    .analytics-card-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s; opacity: 0; }
+    .analytics-memo-card.expanded .analytics-card-body { max-height: 600px; opacity: 1; }
+    .analytics-memo-card.expanded .expand-chevron { transform: rotate(180deg); }
+
+    .analytics-card-body-inner { padding: 0 1.4rem 1.4rem; border-top: 1px solid var(--border); }
+
+    .analytics-stats-row { display: flex; gap: 20px; flex-wrap: wrap; padding: 1rem 0; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    .analytics-stat-pill { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--text-muted); }
+    .analytics-stat-pill strong { color: var(--text-heading); font-size: 1rem; font-weight: 800; }
+
+    .viewers-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+    .viewer-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; background: var(--input-bg); border: 1px solid var(--input-border); }
+    .viewer-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem; font-weight: 700; color: white; }
+    .viewer-name { font-size: 0.85rem; font-weight: 600; color: var(--text-heading); }
+    .viewer-email { font-size: 0.72rem; color: var(--text-muted); }
+    .viewer-time { font-size: 0.7rem; color: var(--text-faint); margin-left: auto; white-space: nowrap; }
+    .viewer-empty { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
+    .viewer-empty i { display: block; font-size: 1.8rem; color: var(--text-faint); margin-bottom: 8px; }
+    .analytics-viewers-loading { text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.82rem; }
+
+    /* ══ ALERTS ══ */
+    .alerts-container { padding: 2rem; max-width: 900px; }
+    .alerts-list { display: flex; flex-direction: column; gap: 0; }
+
+    .alert-item {
+      background: var(--bg-card); border: 1px solid var(--border-card);
+      border-radius: 0; padding: 1rem 1.4rem;
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: background 0.15s; cursor: default;
+    }
+    .alert-item:first-child { border-radius: 20px 20px 0 0; }
+    .alert-item:last-child  { border-radius: 0 0 20px 20px; }
+    .alert-item:first-child:last-child { border-radius: 20px; }
+    .alert-item + .alert-item { border-top: none; }
+    .alert-item.unread { background: color-mix(in srgb, var(--secondary) 4%, var(--bg-card)); }
+
+    .alert-icon-wrap {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .alert-icon-wrap.received { background: #eff1ff; color: #4361ee; }
+    .alert-icon-wrap.sent     { background: #e8f3ec; color: #2c7a4d; }
+    .alert-icon-wrap.urgent   { background: #ffefef; color: #e63946; }
+    body.dark .alert-icon-wrap.received { background: rgba(67,97,238,0.18); }
+    body.dark .alert-icon-wrap.sent     { background: rgba(44,122,77,0.18); }
+    body.dark .alert-icon-wrap.urgent   { background: rgba(230,57,70,0.18); }
+
+    .alert-content { flex: 1; min-width: 0; }
+    .alert-title { font-size: 0.9rem; font-weight: 700; color: var(--text-heading); margin-bottom: 3px; }
+    .alert-item.unread .alert-title { color: var(--secondary); }
+    .alert-body { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+    .alert-time { font-size: 0.7rem; color: var(--text-faint); white-space: nowrap; margin-top: 4px; }
+
+    .alert-unread-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--secondary);
+      flex-shrink: 0; margin-top: 6px; transition: opacity 0.2s;
+    }
+    .alert-item:not(.unread) .alert-unread-dot { opacity: 0; }
+
+    .alerts-empty { text-align: center; padding: 4rem 2rem; color: var(--text-muted); background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-card); }
+    .alerts-empty i { font-size: 3rem; color: var(--text-faint); margin-bottom: 1rem; display: block; }
+    .alerts-empty h3 { font-size: 1rem; font-weight: 700; color: var(--text-heading); margin-bottom: 6px; }
+
+    /* Alert badge on nav */
+    .nav-alert-badge {
+      margin-left: auto; background: #e63946; color: white;
+      font-size: 0.65rem; font-weight: 700; border-radius: 40px;
+      padding: 2px 7px; min-width: 18px; text-align: center; display: none;
+    }
+
+    @media (max-width: 640px) {
+      .inbox-container, .outbox-container, .create-memo-container,
+      .create-user-container, .manage-users-container, .settings-container,
+      .analytics-container, .alerts-container { padding: 1rem; }
+      .memo-card-header-top { flex-wrap: wrap; }
+      .users-grid { grid-template-columns: 1fr; }
+      .dept-cascade-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="success-toast" id="successToast"><i class="fas fa-check-circle" style="margin-right:8px;"></i><span id="toastMsg">Saved</span></div>
+
+<!-- ══ AVATAR PICKER MODAL ══ -->
+<div class="avatar-modal-overlay" id="avatarModalOverlay">
+  <div class="avatar-modal">
+    <div class="avatar-modal-header">
+      <h3><i class="fas fa-circle-user"></i> Choose Your Avatar</h3>
+      <button class="avatar-modal-close" id="closeAvatarModalBtn"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="avatar-grid" id="avatarGrid">
+      <div class="avatar-option" data-src="avatars/1.jpg"><img src="avatars/1.jpg" alt="1" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/2.jpeg"><img src="avatars/2.jpeg" alt="2" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/3.jpeg"><img src="avatars/3.jpeg" alt="3" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/4.jpeg"><img src="avatars/4.jpeg" alt="4" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/5.jpeg"><img src="avatars/5.jpeg" alt="5" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/6.jpeg"><img src="avatars/6.jpeg" alt="6" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/7.jpeg"><img src="avatars/7.jpeg" alt="7" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/8.jpeg"><img src="avatars/8.jpeg" alt="8" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/9.jpeg"><img src="avatars/9.jpeg" alt="9" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/10.jpeg"><img src="avatars/10.jpeg" alt="10" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/11.jpeg"><img src="avatars/11.jpeg" alt="11" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/12.jpeg"><img src="avatars/12.jpeg" alt="12" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/13.jpeg"><img src="avatars/13.jpeg" alt="13" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/14.jpeg"><img src="avatars/14.jpeg" alt="14" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/15.jpg"><img src="avatars/15.jpg" alt="15" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+      <div class="avatar-option" data-src="avatars/16.jpeg"><img src="avatars/16.jpeg" alt="16" onerror="this.parentElement.style.background='var(--nav-active-bg)';this.style.display='none'"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <i class="fas fa-home"></i>
+    <h4>MENU</h4>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-item active" id="navDashboard">
+      <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+    </div>
+
+    <div class="nav-dropdown" id="memosDropdown">
+      <div class="nav-dropdown-trigger" onclick="toggleDropdown('memosDropdown')">
+        <i class="fas fa-inbox nav-icon"></i><span>Memos</span>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="nav-dropdown-list">
+        <div class="nav-sub-item" id="navCreateMemo"><i class="fas fa-pen-to-square"></i> Create Memo</div>
+        <div class="nav-sub-item" id="navInbox">
+          <i class="fas fa-inbox"></i> Inbox
+          <span class="nav-unread-badge" id="navInboxBadge" style="display:none;">0</span>
+        </div>
+        <div class="nav-sub-item" id="navOutbox"><i class="fas fa-paper-plane"></i> Outbox</div>
+      </div>
+    </div>
+
+    <div class="nav-item" id="navAnalytics">
+      <i class="fas fa-chart-line"></i><span>Analytics</span>
+    </div>
+    <div class="nav-item" id="navAlerts">
+      <i class="fas fa-bell"></i><span>Alerts</span>
+      <span class="nav-alert-badge" id="navAlertBadge">0</span>
+    </div>
+
+    <div class="nav-dropdown" id="userMgmtDropdown">
+      <div class="nav-dropdown-trigger" onclick="toggleDropdown('userMgmtDropdown')">
+        <i class="fas fa-users-cog nav-icon"></i><span>User Management</span>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="nav-dropdown-list">
+        <div class="nav-sub-item" id="navCreateUser"><i class="fas fa-user-plus"></i> Create User</div>
+        <div class="nav-sub-item" id="navManageUsers"><i class="fas fa-users"></i> Manage Users</div>
+      </div>
+    </div>
+
+    <div class="nav-item" id="navSettings">
+      <i class="fas fa-cog"></i><span>Settings</span>
+    </div>
+  </div>
+
+  <div style="margin-top: auto;">
+    <div class="sidebar-footer-note"><i class="fas fa-shield-alt" style="margin-right:6px;"></i> Adekunle Ajasin University</div>
+    <div class="nav-item nav-logout" id="logoutNavItem"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div>
+  </div>
+</aside>
+
+<!-- ══ MAIN CONTENT ══ -->
+<div class="main-content" id="mainContent">
+
+  <!-- Top Navbar -->
+  <div class="top-navbar">
+    <div class="left-nav">
+      <button class="hamburger-btn" id="hamburgerToggleBtn"><i class="fas fa-bars"></i></button>
+      <div class="center-logo" id="centerLogo">
+        <div class="navbar-wordmark">
+          <div class="navbar-wordmark-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <rect x="5" y="3" width="15" height="21" rx="2.5" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M9 8h7M9 12h7M9 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M20 15v8l3-2 3 2V15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="navbar-wordmark-name">AAUA MEMO</div>
+        </div>
+      </div>
+    </div>
+    <div class="avatar-circle" id="navAvatar">
+      <i class="fas fa-user-circle" id="navAvatarIcon"></i>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD ── -->
+  <div class="page active" id="pageDashboard">
+    <div class="dashboard-container">
+      <div class="profile-hero">
+        <div class="profile-avatar-large" id="profileAvatarLarge"><i class="fas fa-id-card" id="heroAvatarIcon"></i></div>
+        <div class="profile-info">
+          <div class="user-name" id="userNameDisplay">Loading...</div>
+          <div class="profile-tags">
+            <span class="profile-tag dept"><i class="fas fa-building"></i><span id="deptDisplay">—</span></span>
+            <span class="profile-tag fac"><i class="fas fa-university"></i><span id="facDisplay">—</span></span>
+            <span class="profile-tag dob"><i class="fas fa-cake-candles"></i><span id="dobDisplay">—</span></span>
+          </div>
+          <div class="profile-meta-row">
+            <span><i class="far fa-envelope"></i><span id="userEmailDisplay">—</span></span>
+            <span><i class="fas fa-id-badge"></i><span id="userRoleDisplay">—</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card total-memo"><div class="stat-info"><h4>Total Received</h4><div class="stat-number" id="totalReceived">--</div></div><div class="stat-icon"><i class="fas fa-inbox"></i></div></div>
+        <div class="stat-card opened-memo"><div class="stat-info"><h4>Total Opened</h4><div class="stat-number" id="totalOpened">--</div></div><div class="stat-icon"><i class="fas fa-envelope-open"></i></div></div>
+        <div class="stat-card unread-memo"><div class="stat-info"><h4>Unread Memos</h4><div class="stat-number" id="totalUnread">--</div></div><div class="stat-icon"><i class="fas fa-envelope"></i></div></div>
+        <div class="stat-card extra-card"><div class="stat-info"><h4>Awaiting Action</h4><div class="stat-number" id="awaitingAction">--</div></div><div class="stat-icon"><i class="fas fa-tasks"></i></div></div>
+      </div>
+
+      <div class="news-section">
+        <div class="news-header"><i class="fas fa-newspaper"></i><h2>Company News · General Updates</h2></div>
+        <div class="news-list" id="newsList">
+          <div class="news-item"><div><span class="news-badge">Loading...</span></div></div>
+        </div>
+      </div>
+      <footer><i class="fas fa-lock"></i> Adekunle Ajasin University · <i class="fas fa-headset"></i> support@aaua.edu.ng</footer>
+    </div>
+  </div>
+
+  <!-- ── INBOX ── -->
+  <div class="page" id="pageInbox">
+    <div class="inbox-container">
+      <div class="page-header">
+        <h1><i class="fas fa-inbox"></i> Inbox</h1>
+        <p>Your received memos — click any memo to read its content.</p>
+      </div>
+      <div class="memo-filter-tabs">
+        <div class="mftab active" data-filter="all"><i class="fas fa-layer-group"></i> All <span class="tab-count" id="inboxCountAll">0</span></div>
+        <div class="mftab" data-filter="unread"><i class="fas fa-envelope"></i> Unread <span class="tab-count" id="inboxCountUnread">0</span></div>
+        <div class="mftab" data-filter="urgent"><i class="fas fa-bolt"></i> Urgent <span class="tab-count" id="inboxCountUrgent">0</span></div>
+        <div class="mftab" data-filter="read"><i class="fas fa-envelope-open"></i> Read <span class="tab-count" id="inboxCountRead">0</span></div>
+      </div>
+      <div class="memo-list-toolbar">
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="inboxSearch" placeholder="Search by subject or sender…" oninput="filterInbox()"></div>
+        <select class="memo-sort-select" id="inboxSort" onchange="filterInbox()">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="priority">By Priority</option>
+        </select>
+        <div class="memo-count-label" id="inboxCountLabel">Loading…</div>
+      </div>
+      <div class="memo-list" id="inboxList">
+        <div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading your inbox…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OUTBOX ── -->
+  <div class="page" id="pageOutbox">
+    <div class="outbox-container">
+      <div class="page-header">
+        <h1><i class="fas fa-paper-plane"></i> Outbox</h1>
+        <p>Memos you have sent — click any memo to view its details.</p>
+      </div>
+      <div class="memo-filter-tabs">
+        <div class="mftab active" data-filter="all"><i class="fas fa-layer-group"></i> All <span class="tab-count" id="outboxCountAll">0</span></div>
+        <div class="mftab" data-filter="sent"><i class="fas fa-paper-plane"></i> Sent <span class="tab-count" id="outboxCountSent">0</span></div>
+        <div class="mftab" data-filter="draft"><i class="fas fa-file-pen"></i> Drafts <span class="tab-count" id="outboxCountDraft">0</span></div>
+        <div class="mftab" data-filter="urgent"><i class="fas fa-bolt"></i> Urgent <span class="tab-count" id="outboxCountUrgent">0</span></div>
+      </div>
+      <div class="memo-list-toolbar">
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="outboxSearch" placeholder="Search by subject or recipient…" oninput="filterOutbox()"></div>
+        <select class="memo-sort-select" id="outboxSort" onchange="filterOutbox()">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="priority">By Priority</option>
+        </select>
+        <div class="memo-count-label" id="outboxCountLabel">Loading…</div>
+      </div>
+      <div class="memo-list" id="outboxList">
+        <div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading your outbox…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ANALYTICS ── -->
+  <div class="page" id="pageAnalytics">
+    <div class="analytics-container">
+      <div class="page-header">
+        <h1><i class="fas fa-chart-line"></i> Analytics</h1>
+        <p>Track how many recipients have viewed each memo you sent. Click any memo to see who viewed it.</p>
+      </div>
+
+      <div class="memo-list-toolbar">
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="analyticsSearch" placeholder="Search by subject…" oninput="filterAnalytics()"></div>
+        <select class="memo-sort-select" id="analyticsSort" onchange="filterAnalytics()">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="views">Most Viewed</option>
+        </select>
+        <div class="memo-count-label" id="analyticsCountLabel">Loading…</div>
+      </div>
+
+      <div class="analytics-memo-list" id="analyticsList">
+        <div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading analytics…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ALERTS ── -->
+  <div class="page" id="pageAlerts">
+    <div class="alerts-container">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h1><i class="fas fa-bell"></i> Alerts &amp; Notifications</h1>
+          <p>All notifications about memos you received or sent.</p>
+        </div>
+        <button class="settings-save-btn" id="markAllReadBtn" style="font-size:0.8rem;padding:9px 20px;">
+          <i class="fas fa-check-double"></i> Mark All Read
+        </button>
+      </div>
+
+      <div class="memo-filter-tabs">
+        <div class="mftab active" data-afilter="all"><i class="fas fa-layer-group"></i> All <span class="tab-count" id="alertCountAll">0</span></div>
+        <div class="mftab" data-afilter="received"><i class="fas fa-inbox"></i> Received <span class="tab-count" id="alertCountReceived">0</span></div>
+        <div class="mftab" data-afilter="sent"><i class="fas fa-paper-plane"></i> Sent <span class="tab-count" id="alertCountSent">0</span></div>
+        <div class="mftab" data-afilter="unread"><i class="fas fa-circle"></i> Unread <span class="tab-count" id="alertCountUnread">0</span></div>
+      </div>
+
+      <div class="alerts-list" id="alertsList">
+        <div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading alerts…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div class="page" id="pageSettings">
+    <div class="settings-container">
+      <div class="settings-header">
+        <h1><i class="fas fa-cog"></i> Settings</h1>
+        <p>Manage your profile, appearance, and preferences</p>
+      </div>
+      <div class="settings-tabs">
+        <div class="stab active" data-tab="Profile"><i class="fas fa-user"></i> Edit Profile</div>
+        <div class="stab" data-tab="Theme"><i class="fas fa-palette"></i> Theme & Appearance</div>
+        <div class="stab" data-tab="Notifications"><i class="fas fa-bell"></i> Notifications</div>
+        <div class="stab" data-tab="Security"><i class="fas fa-shield-alt"></i> Security</div>
+      </div>
+
+      <!-- Profile Tab -->
+      <div class="settings-panel active" id="tabProfile">
+        <div class="settings-card">
+          <h3><i class="fas fa-circle-user"></i> Profile Avatar</h3>
+          <div class="avatar-upload-row">
+            <div class="avatar-upload-circle" id="settingsAvatarCircle"><i class="fas fa-user" id="settingsAvatarIcon"></i></div>
+            <div>
+              <button class="avatar-select-btn" id="openAvatarModalBtn"><i class="fas fa-grid-2"></i> Select Avatar</button>
+              <div style="font-size:0.75rem;color:var(--text-faint);margin-top:8px;">Choose from 16 available avatars</div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3><i class="fas fa-user-pen"></i> Personal Information</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Full Name</label><input type="text" id="sFullName" placeholder="e.g. Dr. Adewale Johnson"></div>
+            <div class="form-group"><label>Email Address</label><input type="email" id="sEmail" readonly></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Faculty</label>
+              <select id="sFaculty" onchange="updateSettingsDeptDropdown(this.value)">
+                <option value="">— Select Faculty —</option>
+                <option>Faculty of Arts</option>
+                <option>Faculty of Science</option>
+                <option>Faculty of Social and Management Sciences</option>
+                <option>Faculty of Education</option>
+                <option>Faculty of Law</option>
+                <option>Faculty of Engineering and Technology</option>
+                <option>Faculty of Agriculture</option>
+                <option>College of Medicine and Health Sciences</option>
+                <option>Faculty of Computing</option>
+                <option>Postgraduate School</option>
+                <option>General Studies / Administration</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Department</label>
+              <select id="sDepartment">
+                <option value="">— Select Faculty first —</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Role / Position</label><input type="text" id="sRole" placeholder="e.g. Principal Registrar"></div>
+            <div class="form-group"><label>Date of Birth</label><input type="date" id="sDOB"></div>
+          </div>
+        </div>
+        <button class="settings-save-btn" id="saveProfileBtn"><i class="fas fa-save"></i> Save Profile</button>
+      </div>
+
+      <!-- Theme Tab -->
+      <div class="settings-panel" id="tabTheme">
+        <div class="settings-card">
+          <h3><i class="fas fa-swatchbook"></i> Theme Presets</h3>
+          <div class="preset-grid">
+            <div class="preset-chip selected" data-primary="#0f172b" data-secondary="#3b5fcf"><div class="preset-dot" style="background:linear-gradient(135deg,#0f172b,#3b5fcf)"></div>Navy Blue</div>
+            <div class="preset-chip" data-primary="#1a1a2e" data-secondary="#e94560"><div class="preset-dot" style="background:linear-gradient(135deg,#1a1a2e,#e94560)"></div>Dark Rose</div>
+            <div class="preset-chip" data-primary="#134e4a" data-secondary="#0d9488"><div class="preset-dot" style="background:linear-gradient(135deg,#134e4a,#0d9488)"></div>Forest Teal</div>
+            <div class="preset-chip" data-primary="#312e81" data-secondary="#7c3aed"><div class="preset-dot" style="background:linear-gradient(135deg,#312e81,#7c3aed)"></div>Deep Purple</div>
+            <div class="preset-chip" data-primary="#7c2d12" data-secondary="#ea580c"><div class="preset-dot" style="background:linear-gradient(135deg,#7c2d12,#ea580c)"></div>Burnt Orange</div>
+            <div class="preset-chip" data-primary="#1e3a5f" data-secondary="#2563eb"><div class="preset-dot" style="background:linear-gradient(135deg,#1e3a5f,#2563eb)"></div>Ocean Blue</div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3><i class="fas fa-fill-drip"></i> Custom Colors</h3>
+          <div class="color-grid">
+            <div class="color-field"><label>Primary Color</label><div class="color-input-row"><input type="color" class="color-swatch" id="primaryColorPicker" value="#0f172b"><input type="text" class="color-hex" id="primaryColorHex" value="#0f172b" maxlength="7"></div></div>
+            <div class="color-field"><label>Secondary / Accent</label><div class="color-input-row"><input type="color" class="color-swatch" id="secondaryColorPicker" value="#3b5fcf"><input type="text" class="color-hex" id="secondaryColorHex" value="#3b5fcf" maxlength="7"></div></div>
+          </div>
+          <div class="preview-label">Live Preview</div>
+          <div class="theme-preview-bar" id="themePreviewBar"><div style="width:24px;height:24px;background:rgba(255,255,255,0.25);border-radius:50%;"></div><div style="flex:1;height:8px;background:rgba(255,255,255,0.2);border-radius:40px;"></div><div style="width:60px;height:24px;background:rgba(255,255,255,0.3);border-radius:40px;"></div></div>
+        </div>
+        <div class="settings-card">
+          <h3><i class="fas fa-moon"></i> Display Mode</h3>
+          <div class="toggle-row"><div class="toggle-info"><strong>Dark Mode</strong><span>Switch to a darker interface</span></div><label class="toggle-switch"><input type="checkbox" id="darkModeToggle"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Compact Sidebar</strong><span>Collapse sidebar to icon-only view</span></div><label class="toggle-switch"><input type="checkbox" id="compactSidebarToggle"><span class="toggle-slider"></span></label></div>
+        </div>
+        <button class="settings-save-btn" id="saveThemeBtn"><i class="fas fa-paint-brush"></i> Apply Theme</button>
+      </div>
+
+      <!-- Notifications Tab -->
+      <div class="settings-panel" id="tabNotifications">
+        <div class="settings-card">
+          <h3><i class="fas fa-bell"></i> Notification Preferences</h3>
+          <div class="toggle-row"><div class="toggle-info"><strong>New Memo Alerts</strong><span>Notify when a new memo is received</span></div><label class="toggle-switch"><input type="checkbox" id="notifNewMemo" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Action Required</strong><span>Remind me of memos awaiting my action</span></div><label class="toggle-switch"><input type="checkbox" id="notifAction" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Company Announcements</strong><span>News and general updates</span></div><label class="toggle-switch"><input type="checkbox" id="notifAnnounce"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Email Notifications</strong><span>Receive alerts via email as well</span></div><label class="toggle-switch"><input type="checkbox" id="notifEmail"><span class="toggle-slider"></span></label></div>
+        </div>
+        <button class="settings-save-btn" id="saveNotifBtn"><i class="fas fa-save"></i> Save Preferences</button>
+      </div>
+
+      <!-- Security Tab -->
+      <div class="settings-panel" id="tabSecurity">
+        <div class="settings-card">
+          <h3><i class="fas fa-lock"></i> Change Password</h3>
+          <div class="form-group"><label>Current Password</label><input type="password" id="sCurrentPwd" placeholder="Enter current password"></div>
+          <div class="form-row">
+            <div class="form-group"><label>New Password</label><input type="password" id="sNewPwd" placeholder="Min 6 characters"></div>
+            <div class="form-group"><label>Confirm New Password</label><input type="password" id="sConfirmPwd" placeholder="Repeat new password"></div>
+          </div>
+          <div id="pwdError" style="color:#e63946;font-size:0.8rem;margin-bottom:8px;"></div>
+          <button class="settings-save-btn" id="savePwdBtn"><i class="fas fa-key"></i> Update Password</button>
+        </div>
+        <div class="settings-card">
+          <h3><i class="fas fa-shield-halved"></i> Session & Access</h3>
+          <div class="toggle-row"><div class="toggle-info"><strong>Auto-logout on Inactivity</strong><span>Sign out after 30 mins of inactivity</span></div><label class="toggle-switch"><input type="checkbox" id="autoLogout" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><strong>Login Notifications</strong><span>Alert me when my account is accessed</span></div><label class="toggle-switch"><input type="checkbox" id="loginNotif"><span class="toggle-slider"></span></label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CREATE USER ── -->
+  <div class="page" id="pageCreateUser">
+    <div class="create-user-container">
+      <div class="page-header">
+        <h1><i class="fas fa-user-plus"></i> Create New User</h1>
+        <p>Register a new staff member or official into the AAUA MEMO system.</p>
+      </div>
+
+      <div class="settings-card">
+        <h3><i class="fas fa-id-badge"></i> Account Type</h3>
+        <div class="account-type-grid">
+          <div class="account-type-card selected" data-type="staff"><div class="at-icon"><i class="fas fa-user"></i></div><div class="at-label">Staff</div><div class="at-desc">General university staff member</div></div>
+          <div class="account-type-card" data-type="hod"><div class="at-icon"><i class="fas fa-chalkboard-teacher"></i></div><div class="at-label">HOD</div><div class="at-desc">Head of Department</div></div>
+          <div class="account-type-card" data-type="dean"><div class="at-icon"><i class="fas fa-user-tie"></i></div><div class="at-label">Dean</div><div class="at-desc">Faculty Dean</div></div>
+          <div class="account-type-card" data-type="vc"><div class="at-icon"><i class="fas fa-crown"></i></div><div class="at-label">VC</div><div class="at-desc">Vice Chancellor</div></div>
+        </div>
+        <input type="hidden" id="cuAccountType" value="staff">
+      </div>
+
+      <div class="settings-card">
+        <h3><i class="fas fa-user-pen"></i> Personal Information</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Full Name <span style="color:#e63946">*</span></label><input type="text" id="cuFullName" placeholder="e.g. Dr. Adewale Johnson"></div>
+          <div class="form-group"><label>Email Address <span style="color:#e63946">*</span></label><input type="email" id="cuEmail" placeholder="user@aaua.edu.ng"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Phone Number</label><input type="tel" id="cuPhone" placeholder="e.g. 08012345678"></div>
+          <div class="form-group"><label>Date of Birth</label><input type="date" id="cuDOB"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Gender</label>
+            <select id="cuGender">
+              <option value="">— Select Gender —</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Staff ID / Matric No.</label><input type="text" id="cuStaffId" placeholder="e.g. AAUA/STF/2024/001"></div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3><i class="fas fa-university"></i> Academic / Office Details</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Faculty</label>
+            <select id="cuFaculty" onchange="updateCUDeptDropdown(this.value)">
+              <option value="">— Select Faculty —</option>
+              <option>Faculty of Arts</option>
+              <option>Faculty of Science</option>
+              <option>Faculty of Social and Management Sciences</option>
+              <option>Faculty of Education</option>
+              <option>Faculty of Law</option>
+              <option>Faculty of Engineering and Technology</option>
+              <option>Faculty of Agriculture</option>
+              <option>College of Medicine and Health Sciences</option>
+              <option>Faculty of Computing</option>
+              <option>Postgraduate School</option>
+              <option>General Studies / Administration</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <select id="cuDepartment">
+              <option value="">— Select Faculty first —</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Office / Unit</label><input type="text" id="cuOffice" placeholder="e.g. Registry, ICT Unit"></div>
+          <div class="form-group"><label>Role / Position</label><input type="text" id="cuRole" placeholder="e.g. Lecturer II"></div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3><i class="fas fa-lock"></i> Account Password</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Password <span style="color:#e63946">*</span></label>
+            <div class="pwd-input-wrap">
+              <input type="password" id="cuPassword" placeholder="Min 6 characters" oninput="checkPwdStrength(this.value)">
+              <button class="show-pwd-btn" type="button" onclick="togglePwd('cuPassword', this)"><i class="fas fa-eye"></i></button>
+            </div>
+            <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="pwdStrengthFill"></div></div>
+            <div class="pwd-strength-label" id="pwdStrengthLabel">Enter a password</div>
+          </div>
+          <div class="form-group">
+            <label>Confirm Password <span style="color:#e63946">*</span></label>
+            <div class="pwd-input-wrap">
+              <input type="password" id="cuPasswordConfirm" placeholder="Repeat password">
+              <button class="show-pwd-btn" type="button" onclick="togglePwd('cuPasswordConfirm', this)"><i class="fas fa-eye"></i></button>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-top:-4px;"><i class="fas fa-info-circle" style="margin-right:4px;"></i>The user can change their password after first login via Settings.</div>
+      </div>
+
+      <div class="cu-result" id="cuResult"><i class="fas fa-circle-info"></i><span id="cuResultMsg"></span></div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:0.5rem;">
+        <button class="settings-save-btn" id="cuSubmitBtn" style="min-width:180px;"><i class="fas fa-user-plus"></i> Create Account</button>
+        <button class="settings-save-btn" id="cuResetBtn" style="background:var(--input-bg);color:var(--text-body);border:1.5px solid var(--input-border);"><i class="fas fa-rotate-left"></i> Reset Form</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MANAGE USERS ── -->
+  <div class="page" id="pageManageUsers">
+    <div class="manage-users-container">
+      <div class="page-header">
+        <h1><i class="fas fa-users"></i> Manage Users</h1>
+        <p>View, edit, or remove all registered AAUA MEMO users.</p>
+      </div>
+      <div class="mu-toolbar">
+        <div class="mu-search-wrap"><i class="fas fa-search"></i><input type="text" id="muSearch" placeholder="Search by name or email…" oninput="filterUsers()"></div>
+        <select class="mu-filter-select" id="muTypeFilter" onchange="filterUsers()">
+          <option value="">All Types</option>
+          <option value="staff">Staff</option>
+          <option value="hod">HOD</option>
+          <option value="dean">Dean</option>
+          <option value="vc">VC</option>
+        </select>
+        <div class="mu-count" id="muCount">Loading…</div>
+      </div>
+      <div class="users-grid" id="usersGrid">
+        <div class="mu-loading"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;color:var(--text-faint);"></i><br><br>Loading users…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CREATE MEMO ── -->
+  <div class="page" id="pageCreateMemo">
+    <div class="create-memo-container">
+      <div class="page-header">
+        <h1><i class="fas fa-pen-to-square"></i> Create Memo</h1>
+        <p>Compose and dispatch official memos to staff, faculties or individual recipients.</p>
+      </div>
+
+      <div class="settings-card">
+        <h3><i class="fas fa-file-lines"></i> Memo Details</h3>
+        <div class="form-group">
+          <label>Subject / Title <span style="color:#e63946">*</span></label>
+          <input type="text" id="memoSubject" placeholder="e.g. Staff Meeting — Friday 3pm">
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Reference Number</label><input type="text" id="memoRef" readonly style="font-family:monospace;font-size:0.88rem;letter-spacing:0.5px;"></div>
+          <div class="form-group"><label>Date</label><input type="date" id="memoDate"></div>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="memoCategory">
+            <option value="general">General</option>
+            <option value="academic">Academic</option>
+            <option value="administrative">Administrative</option>
+            <option value="finance">Finance</option>
+            <option value="event">Event / Programme</option>
+            <option value="security">Security</option>
+            <option value="it">IT / Technical</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3><i class="fas fa-flag"></i> Priority Level</h3>
+        <div class="priority-grid">
+          <div class="priority-card low" data-priority="low"><i class="fas fa-flag"></i><span>Low</span></div>
+          <div class="priority-card normal selected" data-priority="normal"><i class="fas fa-flag"></i><span>Normal</span></div>
+          <div class="priority-card high" data-priority="high"><i class="fas fa-flag"></i><span>High</span></div>
+          <div class="priority-card urgent" data-priority="urgent"><i class="fas fa-bolt"></i><span>Urgent</span></div>
+        </div>
+        <input type="hidden" id="memoPriority" value="normal">
+      </div>
+
+      <div class="settings-card">
+        <h3><i class="fas fa-users"></i> Recipients</h3>
+        <div class="recipient-tabs">
+          <div class="rtab active" data-rmode="all"><i class="fas fa-globe"></i> All Users</div>
+          <div class="rtab" data-rmode="faculty"><i class="fas fa-university"></i> By Faculty</div>
+          <div class="rtab" data-rmode="department"><i class="fas fa-building"></i> By Department</div>
+          <div class="rtab" data-rmode="type"><i class="fas fa-id-badge"></i> By Account Type</div>
+          <div class="rtab" data-rmode="manual"><i class="fas fa-user-check"></i> Select Manually</div>
+        </div>
+
+        <!-- All Users -->
+        <div class="recipient-panel active" id="rpAll">
+          <div class="recip-count-badge" id="allUsersCountBadge"><i class="fas fa-users"></i> Loading user count…</div>
+        </div>
+
+        <!-- By Faculty -->
+        <div class="recipient-panel" id="rpFaculty">
+          <div class="faculty-check-grid" id="facultyCheckGrid"></div>
+        </div>
+
+        <!-- By Department -->
+        <div class="recipient-panel" id="rpDepartment">
+          <div class="dept-cascade">
+            <div class="dept-cascade-row">
+              <div>
+                <label>Faculty</label>
+                <select id="deptFacultySelect" onchange="loadDeptsByFaculty(this.value)">
+                  <option value="">— Select Faculty —</option>
+                  <option value="Faculty of Arts">Faculty of Arts</option>
+                  <option value="Faculty of Science">Faculty of Science</option>
+                  <option value="Faculty of Social and Management Sciences">Faculty of Social and Management Sciences</option>
+                  <option value="Faculty of Education">Faculty of Education</option>
+                  <option value="Faculty of Law">Faculty of Law</option>
+                  <option value="Faculty of Engineering and Technology">Faculty of Engineering and Technology</option>
+                  <option value="Faculty of Agriculture">Faculty of Agriculture</option>
+                  <option value="College of Medicine and Health Sciences">College of Medicine and Health Sciences</option>
+                  <option value="Faculty of Computing">Faculty of Computing</option>
+                  <option value="Postgraduate School">Postgraduate School</option>
+                  <option value="General Studies / Administration">General Studies / Administration</option>
+                </select>
+              </div>
+              <div>
+                <label>Department</label>
+                <select id="deptDeptSelect" disabled onchange="onDeptSelected(this.value)">
+                  <option value="">— Select Faculty first —</option>
+                </select>
+              </div>
+            </div>
+            <div id="deptMatchInfo2"></div>
+          </div>
+        </div>
+
+        <!-- By Account Type -->
+        <div class="recipient-panel" id="rpType">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <label class="fcheck-item" id="typeStaff"><div class="fcheck-box"></div><span class="fcheck-label"><i class="fas fa-user" style="margin-right:6px;color:var(--secondary);"></i>Staff</span></label>
+            <label class="fcheck-item" id="typeHOD"><div class="fcheck-box"></div><span class="fcheck-label"><i class="fas fa-chalkboard-teacher" style="margin-right:6px;color:#c05700;"></i>HOD</span></label>
+            <label class="fcheck-item" id="typeDean"><div class="fcheck-box"></div><span class="fcheck-label"><i class="fas fa-user-tie" style="margin-right:6px;color:#2c7a4d;"></i>Dean</span></label>
+            <label class="fcheck-item" id="typeVC"><div class="fcheck-box"></div><span class="fcheck-label"><i class="fas fa-crown" style="margin-right:6px;color:#b45309;"></i>VC</span></label>
+          </div>
+        </div>
+
+        <!-- Manual search -->
+        <div class="recipient-panel" id="rpManual">
+          <div class="manual-search-wrap">
+            <div class="manual-search-bar">
+              <i class="fas fa-magnifying-glass manual-search-icon"></i>
+              <input type="text" id="manualUserSearch" class="manual-search-input" placeholder="Search by name or email…" oninput="searchPickUsers(this.value)" autocomplete="off">
+              <button class="manual-search-clear" id="manualSearchClear" onclick="clearManualSearch()"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="user-pick-dropdown" id="userPickDropdown"></div>
+          </div>
+          <div class="selected-recipients" id="selectedRecipients"></div>
+        </div>
+      </div>
+
+      <!-- Memo Body -->
+      <div class="settings-card">
+        <h3><i class="fas fa-align-left"></i> Memo Body</h3>
+        <div class="memo-toolbar">
+          <button class="memo-tool-btn" onclick="insertMemoText('**', '**')"><i class="fas fa-bold"></i></button>
+          <button class="memo-tool-btn" onclick="insertMemoText('_', '_')"><i class="fas fa-italic"></i></button>
+          <button class="memo-tool-btn" onclick="insertMemoText('\n• ', '')"><i class="fas fa-list-ul"></i></button>
+          <button class="memo-tool-btn" onclick="insertMemoText('\n1. ', '')"><i class="fas fa-list-ol"></i></button>
+          <button class="memo-tool-btn" onclick="insertMemoText('\n---\n', '')"><i class="fas fa-minus"></i></button>
+          <button class="memo-tool-btn" onclick="clearMemoBody()"><i class="fas fa-trash-can"></i></button>
+        </div>
+        <textarea class="memo-body-area" id="memoBody" placeholder="Type the memo content here…"></textarea>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+          <span style="font-size:0.75rem;color:var(--text-faint);" id="memoCharCount">0 characters</span>
+          <span style="font-size:0.75rem;color:var(--text-faint);">Supports plain text formatting</span>
+        </div>
+      </div>
+
+      <!-- Additional Options — Confidential ONLY (removed Ack & Email Notif) -->
+      <div class="settings-card" style="padding:1rem 1.4rem;">
+        <h3 style="margin-bottom:0.5rem;"><i class="fas fa-paperclip"></i> Additional Options</h3>
+        <div class="toggle-row" style="border-bottom:none;">
+          <div class="toggle-info"><strong>Confidential</strong><span>Mark memo as confidential — recipients cannot forward</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="memoConfidential"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="memo-result" id="memoResult"><i class="fas fa-circle-info"></i><span id="memoResultMsg"></span></div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:0.5rem;">
+        <button class="settings-save-btn" id="memoSendBtn" style="min-width:180px;"><i class="fas fa-paper-plane"></i> Send Memo</button>
+        <button class="settings-save-btn" id="memoDraftBtn" style="background:var(--input-bg);color:var(--text-body);border:1.5px solid var(--input-border);"><i class="fas fa-floppy-disk"></i> Save as Draft</button>
+        <button class="settings-save-btn" id="memoClearBtn" style="background:var(--input-bg);color:var(--text-body);border:1.5px solid var(--input-border);"><i class="fas fa-rotate-left"></i> Clear</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main-content -->
+
+<!-- ══ EDIT USER MODAL ══ -->
+<div class="edit-user-modal-overlay" id="editUserModalOverlay">
+  <div class="edit-user-modal">
+    <div class="eum-header">
+      <h3><i class="fas fa-user-pen"></i> Edit User</h3>
+      <button class="eum-close" id="closeEditUserModal"><i class="fas fa-xmark"></i></button>
+    </div>
+    <input type="hidden" id="euUid">
+    <div class="form-row">
+      <div class="form-group"><label>Full Name</label><input type="text" id="euFullName"></div>
+      <div class="form-group"><label>Email (read-only)</label><input type="email" id="euEmail" readonly></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Account Type</label>
+        <select id="euAccountType">
+          <option value="staff">Staff</option>
+          <option value="hod">HOD</option>
+          <option value="dean">Dean</option>
+          <option value="vc">VC</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Role / Position</label><input type="text" id="euRole" placeholder="e.g. Lecturer II"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Faculty</label>
+        <select id="euFaculty" onchange="updateEUDeptDropdown(this.value)">
+          <option value="">— Select Faculty —</option>
+          <option>Faculty of Arts</option>
+          <option>Faculty of Science</option>
+          <option>Faculty of Social and Management Sciences</option>
+          <option>Faculty of Education</option>
+          <option>Faculty of Law</option>
+          <option>Faculty of Engineering and Technology</option>
+          <option>Faculty of Agriculture</option>
+          <option>College of Medicine and Health Sciences</option>
+          <option>Faculty of Computing</option>
+          <option>Postgraduate School</option>
+          <option>General Studies / Administration</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Department</label>
+        <select id="euDepartment">
+          <option value="">— Select Faculty first —</option>
+        </select>
+      </div>
+    </div>
+    <div id="euError" style="color:#e63946;font-size:0.8rem;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:10px;margin-top:0.5rem;">
+      <button class="settings-save-btn" style="background:var(--input-bg);color:var(--text-body);border:1.5px solid var(--input-border);flex:1;" id="cancelEditUserBtn">Cancel</button>
+      <button class="settings-save-btn" style="flex:2;" id="saveEditUserBtn"><i class="fas fa-save"></i> Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DELETE CONFIRM MODAL ══ -->
+<div class="del-modal-overlay" id="delModalOverlay">
+  <div class="del-modal">
+    <div class="del-modal-icon"><i class="fas fa-triangle-exclamation"></i></div>
+    <h3>Delete User Account?</h3>
+    <p id="delModalMsg">This will permanently remove the user's profile and stats from Firestore.</p>
+    <input type="hidden" id="delTargetUid">
+    <div class="del-modal-actions">
+      <button class="del-btn-cancel" id="cancelDelBtn">Cancel</button>
+      <button class="del-btn-confirm" id="confirmDelBtn"><i class="fas fa-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAOEp1lA8rUKnNo5C5lXpCQJ8NfQ2n-zbA",
+  authDomain: "aaua-memo-ally.firebaseapp.com",
+  projectId: "aaua-memo-ally",
+  storageBucket: "aaua-memo-ally.firebasestorage.app",
+  messagingSenderId: "274125964462",
+  appId: "1:274125964462:web:c19a7de77aed14bada193f"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+let currentUser = null;
+
+/* ── Dept map ── */
+const FACULTY_DEPT_MAP = {
+  'Faculty of Arts': ['English','History and International Studies','Linguistics and African Languages','Music','Religious Studies','Theatre and Media Arts','Philosophy','Creative Arts'],
+  'Faculty of Science': ['Biochemistry','Botany','Chemistry','Computer Science','Mathematics','Microbiology','Physics','Statistics','Zoology'],
+  'Faculty of Social and Management Sciences': ['Accounting','Banking and Finance','Business Administration','Economics','Mass Communication','Political Science','Psychology','Public Administration','Sociology'],
+  'Faculty of Education': ['Early Childhood and Primary Education','Educational Administration','Educational Foundations','Guidance and Counselling','Human Kinetics','Library and Information Science','Science Education','Social Science Education'],
+  'Faculty of Law': ['Business Law','International Law','Jurisprudence','Private and Property Law','Public Law'],
+  'Faculty of Engineering and Technology': ['Chemical Engineering','Civil Engineering','Computer Engineering','Electrical Engineering','Mechanical Engineering'],
+  'Faculty of Agriculture': ['Agricultural Economics','Agronomy','Animal Production','Fisheries Technology','Forest Resources Management','Soil Science and Land Management'],
+  'College of Medicine and Health Sciences': ['Human Anatomy','Human Physiology','Medical Biochemistry','Medicine and Surgery','Nursing Science','Pharmacology'],
+  'Faculty of Computing': ['Information and Communication Technology','Information System','Cyber Security','Data Science','Computer Science','Software Engineering'],
+  'Postgraduate School': ['Postgraduate Studies'],
+  'General Studies / Administration': ['Registry','Bursary','ICT Unit','Library Services','General Studies','Works and Services','Security Unit']
+};
+
+function buildDeptOptions(faculty, currentDept=''){
+  const depts = FACULTY_DEPT_MAP[faculty] || [];
+  if(!depts.length) return '<option value="">No departments found</option>';
+  return '<option value="">— Select Department —</option>' + depts.map(d=>`<option value="${d}"${d===currentDept?' selected':''}>${d}</option>`).join('');
+}
+
+/* Dept dropdown updaters */
+function updateCUDeptDropdown(faculty){
+  const sel=document.getElementById('cuDepartment');
+  if(!faculty){ sel.innerHTML='<option value="">— Select Faculty first —</option>'; return; }
+  sel.innerHTML=buildDeptOptions(faculty);
+}
+function updateEUDeptDropdown(faculty){
+  const sel=document.getElementById('euDepartment');
+  if(!faculty){ sel.innerHTML='<option value="">— Select Faculty first —</option>'; return; }
+  sel.innerHTML=buildDeptOptions(faculty);
+}
+function updateSettingsDeptDropdown(faculty){
+  const sel=document.getElementById('sDepartment');
+  if(!faculty){ sel.innerHTML='<option value="">— Select Faculty first —</option>'; return; }
+  sel.innerHTML=buildDeptOptions(faculty);
+}
+
+/* ── Theme helpers ── */
+const root = document.documentElement;
+function setCSSVar(n,v){ root.style.setProperty(n,v); }
+function applyTheme(p,s){
+  setCSSVar('--primary',p); setCSSVar('--secondary',s);
+  document.querySelectorAll('.sidebar-header i').forEach(el=>el.style.color=p);
+  document.querySelectorAll('.nav-item:not(.nav-logout) i,.nav-dropdown-trigger i.nav-icon').forEach(el=>el.style.color=p);
+  document.querySelectorAll('.nav-item.active i').forEach(el=>el.style.color=s);
+  document.querySelectorAll('.avatar-circle,.profile-avatar-large,.avatar-upload-circle').forEach(el=>el.style.background=`linear-gradient(145deg,${p},${s})`);
+  const wn=document.querySelector('.navbar-wordmark-name');
+  if(wn) wn.style.backgroundImage=`linear-gradient(135deg,${p},${s})`;
+  let ds=document.getElementById('dynThemeStyle');
+  if(!ds){ds=document.createElement('style');ds.id='dynThemeStyle';document.head.appendChild(ds);}
+  ds.textContent=`.profile-hero::before{background:linear-gradient(90deg,${p},${s},${p})!important;background-size:200% auto;animation:shimmer 3s linear infinite;}
+.stab.active{background:${p}!important;border-color:${p}!important;}
+.settings-save-btn{background:${p}!important;}
+.toggle-switch input:checked+.toggle-slider{background:${s}!important;}
+.nav-item.active{background:${s}22!important;}
+.nav-item.active i{color:${s}!important;}
+.nav-sub-item:hover i{color:${s}!important;}
+.mftab.active{background:${s}!important;border-color:${s}!important;}
+.rtab.active{background:${s}!important;border-color:${s}!important;}
+.memo-card.unread .memo-card-header{background:color-mix(in srgb,${s} 5%,var(--bg-card));}
+.memo-card.unread .memo-card-header:hover{background:color-mix(in srgb,${s} 10%,var(--bg-card));}
+.memo-card.unread .memo-card-from{color:${s};}
+.unread-dot{background:${s};}
+.manual-search-bar:focus-within{border-color:${s}!important;}
+.fcheck-item.checked{border-color:${s}!important;background:var(--nav-active-bg);}
+.fcheck-item.checked .fcheck-box{background:${s}!important;border-color:${s}!important;}
+.priority-card.selected{border-color:${s}!important;background:var(--nav-active-bg);}
+.recip-count-badge{color:${s};}
+.nav-unread-badge{background:${s};}`;
+  const bar=document.getElementById('themePreviewBar');
+  if(bar) bar.style.background=`linear-gradient(135deg,${p},${s})`;
+}
+function applyDarkMode(en){ document.body.classList.toggle('dark',en); }
+
+async function loadSavedTheme(uid){
+  const snap=await db.collection('userProfiles').doc(uid).get();
+  if(!snap.exists) return;
+  const d=snap.data();
+  const p=d.primaryColor||'#0f172b',s=d.secondaryColor||'#3b5fcf';
+  applyTheme(p,s);
+  if(d.darkMode) applyDarkMode(true);
+  syncPickerUI(p,s);
+}
+function syncPickerUI(p,s){
+  ['primaryColorPicker','primaryColorHex'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=p;});
+  ['secondaryColorPicker','secondaryColorHex'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=s;});
+}
+
+/* ── Page switching ── */
+function showPage(pageId,activeNavId){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pageId)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(activeNavId){
+    const el=document.getElementById(activeNavId);
+    if(el){ el.classList.add('active'); const s=root.style.getPropertyValue('--secondary')||'#3b5fcf'; el.querySelector('i')?.style.setProperty('color',s); }
+  }
+}
+function activateSubNav(id){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nav-sub-item').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById(id); if(el) el.classList.add('active');
+  if(['navCreateMemo','navInbox','navOutbox'].includes(id)) document.getElementById('memosDropdown')?.classList.add('open');
+  if(['navCreateUser','navManageUsers'].includes(id)) document.getElementById('userMgmtDropdown')?.classList.add('open');
+}
+
+/* Nav events */
+document.getElementById('navDashboard')?.addEventListener('click',()=>{
+  document.querySelectorAll('.nav-sub-item').forEach(n=>n.classList.remove('active'));
+  showPage('pageDashboard','navDashboard');
+});
+document.getElementById('navAnalytics')?.addEventListener('click',()=>{
+  document.querySelectorAll('.nav-sub-item').forEach(n=>n.classList.remove('active'));
+  showPage('pageAnalytics','navAnalytics');
+  loadAnalytics();
+});
+document.getElementById('navAlerts')?.addEventListener('click',()=>{
+  document.querySelectorAll('.nav-sub-item').forEach(n=>n.classList.remove('active'));
+  showPage('pageAlerts','navAlerts');
+  loadAlerts();
+});
+document.getElementById('navSettings')?.addEventListener('click',()=>{
+  document.querySelectorAll('.nav-sub-item').forEach(n=>n.classList.remove('active'));
+  showPage('pageSettings','navSettings');
+  populateSettingsForm();
+});
+document.getElementById('navCreateUser')?.addEventListener('click',()=>{
+  showPage('pageCreateUser',null); activateSubNav('navCreateUser'); resetCreateUserForm();
+});
+document.getElementById('navManageUsers')?.addEventListener('click',()=>{
+  showPage('pageManageUsers',null); activateSubNav('navManageUsers'); loadAllUsers();
+});
+document.getElementById('navCreateMemo')?.addEventListener('click',()=>{
+  showPage('pageCreateMemo',null); activateSubNav('navCreateMemo'); initCreateMemo();
+});
+document.getElementById('navInbox')?.addEventListener('click',()=>{
+  showPage('pageInbox',null); activateSubNav('navInbox'); loadInbox();
+});
+document.getElementById('navOutbox')?.addEventListener('click',()=>{
+  showPage('pageOutbox',null); activateSubNav('navOutbox'); loadOutbox();
+});
+
+/* ══════════════════════════════════════════════════════════
+   INBOX
+══════════════════════════════════════════════════════════ */
+let inboxData = [];
+let inboxFilter = 'all';
+let inboxUnsubscribe = null;
+
+async function loadInbox(){
+  const listEl=document.getElementById('inboxList');
+  listEl.innerHTML='<div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading your inbox…</span></div>';
+  if(inboxUnsubscribe) inboxUnsubscribe();
+  inboxUnsubscribe = db.collection('userInbox').doc(currentUser.uid).collection('memos')
+    .orderBy('receivedAt','desc')
+    .onSnapshot(async snap=>{
+      const memos=[];
+      snap.forEach(d=>memos.push({id:d.id,...d.data()}));
+      inboxData=memos;
+      updateInboxCounts();
+      filterInbox();
+      updateNavInboxBadge();
+    }, err=>{
+      listEl.innerHTML=`<div class="memo-empty"><i class="fas fa-circle-exclamation"></i><h3>Could not load inbox</h3><p>${err.message}</p></div>`;
+    });
+}
+
+function updateInboxCounts(){
+  const all=inboxData.length, unread=inboxData.filter(m=>!m.read).length,
+        urgent=inboxData.filter(m=>m.priority==='urgent').length, read=inboxData.filter(m=>m.read).length;
+  document.getElementById('inboxCountAll').textContent=all;
+  document.getElementById('inboxCountUnread').textContent=unread;
+  document.getElementById('inboxCountUrgent').textContent=urgent;
+  document.getElementById('inboxCountRead').textContent=read;
+}
+
+function updateNavInboxBadge(){
+  const unread=inboxData.filter(m=>!m.read).length;
+  const badge=document.getElementById('navInboxBadge');
+  if(!badge) return;
+  badge.style.display=unread>0?'inline-flex':'none';
+  badge.textContent=unread>9?'9+':unread;
+}
+
+function filterInbox(){
+  const q=(document.getElementById('inboxSearch')?.value||'').toLowerCase();
+  const sort=document.getElementById('inboxSort')?.value||'newest';
+  let data=[...inboxData];
+  if(inboxFilter==='unread') data=data.filter(m=>!m.read);
+  else if(inboxFilter==='read') data=data.filter(m=>m.read);
+  else if(inboxFilter==='urgent') data=data.filter(m=>m.priority==='urgent');
+  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.senderName||'').toLowerCase().includes(q));
+  if(sort==='oldest') data.sort((a,b)=>toMs(a.receivedAt)-toMs(b.receivedAt));
+  else if(sort==='priority'){ const order={urgent:0,high:1,normal:2,low:3}; data.sort((a,b)=>(order[a.priority]||2)-(order[b.priority]||2)); }
+  else data.sort((a,b)=>toMs(b.receivedAt)-toMs(a.receivedAt));
+  document.getElementById('inboxCountLabel').textContent=`${data.length} memo${data.length!==1?'s':''}`;
+  renderInboxList(data);
+}
+
+function toMs(ts){
+  if(!ts) return 0;
+  if(ts.seconds) return ts.seconds*1000;
+  if(ts instanceof Date) return ts.getTime();
+  return 0;
+}
+
+function renderInboxList(memos){
+  const listEl=document.getElementById('inboxList');
+  if(!memos.length){
+    listEl.innerHTML=`<div class="memo-empty"><i class="fas fa-inbox"></i><h3>No memos here</h3><p>You have no memos matching this filter.</p></div>`;
+    return;
+  }
+  listEl.innerHTML=memos.map(m=>{
+    const isUnread=!m.read, pri=m.priority||'normal';
+    const priLabels={low:'Low',normal:'Normal',high:'High',urgent:'Urgent'};
+    const priIcons={low:'fa-flag',normal:'fa-flag',high:'fa-flag',urgent:'fa-bolt'};
+    const dateStr=toMs(m.receivedAt)?new Date(toMs(m.receivedAt)).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    const senderInitial=(m.senderName||'?')[0].toUpperCase();
+    return `
+    <div class="memo-card${isUnread?' unread':''}" data-id="${m.memoId||m.id}" id="inbox-card-${m.memoId||m.id}">
+      <div class="memo-card-header" onclick="toggleInboxMemo('${m.memoId||m.id}','${m.id}')">
+        <div class="unread-dot"></div>
+        <div class="memo-card-sender-avatar" style="background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;color:white;">${senderInitial}</div>
+        <div class="memo-card-header-info">
+          <div class="memo-card-header-top">
+            <span class="memo-card-from">${m.senderName||'AAUA Admin'}</span>
+            <span class="priority-badge ${pri}"><i class="fas ${priIcons[pri]}"></i>${priLabels[pri]}</span>
+            ${m.confidential?`<span class="priority-badge urgent"><i class="fas fa-lock"></i>Confidential</span>`:''}
+          </div>
+          <div class="memo-card-subject">${m.subject||'(No Subject)'}</div>
+          <div class="memo-card-preview" id="preview-${m.memoId||m.id}">${isUnread?'<i class="fas fa-lock" style="font-size:0.7rem;margin-right:4px;"></i>Click to open and read this memo…':'Click to expand memo details…'}</div>
+        </div>
+        <span class="memo-card-date">${dateStr}</span>
+        <i class="fas fa-chevron-down expand-chevron"></i>
+      </div>
+      <div class="memo-card-body">
+        <div class="memo-card-body-inner" id="body-${m.memoId||m.id}">
+          <div style="text-align:center;padding:1rem;color:var(--text-faint);"><i class="fas fa-spinner fa-spin"></i></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleInboxMemo(memoId, inboxDocId){
+  const card=document.getElementById(`inbox-card-${memoId}`);
+  if(!card) return;
+  const isExpanded=card.classList.contains('expanded');
+  document.querySelectorAll('.memo-card.expanded').forEach(c=>c.classList.remove('expanded'));
+  if(isExpanded) return;
+  card.classList.add('expanded');
+
+  const wasUnread=card.classList.contains('unread');
+  if(wasUnread){
+    card.classList.remove('unread');
+    try{
+      await db.collection('userInbox').doc(currentUser.uid).collection('memos').doc(inboxDocId).update({read:true,readAt:firebase.firestore.FieldValue.serverTimestamp()});
+    }catch(e){}
+  }
+
+  // Record view on the memo doc itself (writer=reader, so no permission issues).
+  // viewCount and viewers map live on the memos/{memoId} doc.
+  try{
+    const profileSnap = await db.collection('userProfiles').doc(currentUser.uid).get();
+    const profileData = profileSnap.exists ? profileSnap.data() : {};
+    const viewerName  = profileData.fullName || currentUser.displayName || currentUser.email;
+    const viewerEmail = profileData.email || currentUser.email;
+    // Use flat memoViews collection — doc ID = memoId_uid (avoids subcollection permission issues)
+    const viewDocId = `${memoId}_${currentUser.uid}`;
+    const existingView = await db.collection('memoViews').doc(viewDocId).get();
+    if(!existingView.exists){
+      await db.collection('memoViews').doc(viewDocId).set({
+        memoId, uid: currentUser.uid, name: viewerName,
+        email: viewerEmail, viewedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      // Update analytics summary doc owned by sender
+      await db.collection('memoAnalytics').doc(memoId).set({
+        memoId, viewCount: firebase.firestore.FieldValue.increment(1),
+        lastViewed: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge: true});
+    }
+  }catch(e){ console.warn('Analytics write error:', e.message); }
+
+  const bodyEl=document.getElementById(`body-${memoId}`);
+  try{
+    const snap=await db.collection('memos').doc(memoId).get();
+    if(!snap.exists){ bodyEl.innerHTML='<p style="color:var(--text-muted);font-size:0.85rem;">Memo content not found.</p>'; return; }
+    const md=snap.data();
+    const dateStr=md.date||'—';
+    const catCap=(md.category||'General').charAt(0).toUpperCase()+(md.category||'General').slice(1);
+    bodyEl.innerHTML=`
+      ${md.confidential?`<div class="confidential-banner"><i class="fas fa-lock"></i> This memo is marked <strong>Confidential</strong> — do not forward.</div>`:''}
+      <div class="memo-meta-row">
+        <span><i class="fas fa-hashtag"></i>${md.refNumber||'—'}</span>
+        <span><i class="fas fa-calendar"></i>${dateStr}</span>
+        <span><i class="fas fa-tag"></i>${catCap}</span>
+        <span><i class="fas fa-users"></i>${md.recipientCount||1} recipient(s)</span>
+        <span><i class="fas fa-user-pen"></i>From: ${md.senderName||'Admin'}</span>
+      </div>
+      <div class="memo-body-text">${escapeHtml(md.body||'(No content)')}</div>
+      <div class="memo-card-actions-bar">
+        <button class="mca-btn" onclick="markUnread('${inboxDocId}')"><i class="fas fa-envelope"></i> Mark Unread</button>
+      </div>`;
+  }catch(e){
+    bodyEl.innerHTML=`<p style="color:#e63946;font-size:0.85rem;">Failed to load memo: ${e.message}</p>`;
+  }
+}
+
+async function markUnread(inboxDocId){
+  try{
+    await db.collection('userInbox').doc(currentUser.uid).collection('memos').doc(inboxDocId).update({read:false});
+    showToast('Marked as unread');
+  }catch(e){ showToast(e.message,true); }
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.querySelectorAll('#pageInbox .mftab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('#pageInbox .mftab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    inboxFilter=tab.dataset.filter;
+    filterInbox();
+  });
+});
+
+let outboxData=[], outboxFilter='all', outboxUnsubscribe=null;
+
+async function loadOutbox(){
+  const listEl=document.getElementById('outboxList');
+  listEl.innerHTML='<div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading outbox…</span></div>';
+  if(outboxUnsubscribe) outboxUnsubscribe();
+  outboxUnsubscribe=db.collection('memos').where('senderUid','==',currentUser.uid).orderBy('createdAt','desc')
+    .onSnapshot(snap=>{
+      const memos=[]; snap.forEach(d=>memos.push({id:d.id,...d.data()}));
+      outboxData=memos; updateOutboxCounts(); filterOutbox();
+    }, err=>{
+      listEl.innerHTML=`<div class="memo-empty"><i class="fas fa-circle-exclamation"></i><h3>Could not load outbox</h3><p>${err.message}</p></div>`;
+    });
+}
+
+function updateOutboxCounts(){
+  const all=outboxData.length, sent=outboxData.filter(m=>m.status==='sent').length,
+        draft=outboxData.filter(m=>m.status==='draft').length, urgent=outboxData.filter(m=>m.priority==='urgent').length;
+  document.getElementById('outboxCountAll').textContent=all;
+  document.getElementById('outboxCountSent').textContent=sent;
+  document.getElementById('outboxCountDraft').textContent=draft;
+  document.getElementById('outboxCountUrgent').textContent=urgent;
+}
+
+function filterOutbox(){
+  const q=(document.getElementById('outboxSearch')?.value||'').toLowerCase();
+  const sort=document.getElementById('outboxSort')?.value||'newest';
+  let data=[...outboxData];
+  if(outboxFilter==='sent') data=data.filter(m=>m.status==='sent');
+  else if(outboxFilter==='draft') data=data.filter(m=>m.status==='draft');
+  else if(outboxFilter==='urgent') data=data.filter(m=>m.priority==='urgent');
+  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q));
+  if(sort==='oldest') data.sort((a,b)=>toMs(a.createdAt)-toMs(b.createdAt));
+  else if(sort==='priority'){ const order={urgent:0,high:1,normal:2,low:3}; data.sort((a,b)=>(order[a.priority]||2)-(order[b.priority]||2)); }
+  else data.sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
+  document.getElementById('outboxCountLabel').textContent=`${data.length} memo${data.length!==1?'s':''}`;
+  renderOutboxList(data);
+}
+
+function renderOutboxList(memos){
+  const listEl=document.getElementById('outboxList');
+  if(!memos.length){
+    listEl.innerHTML=`<div class="memo-empty"><i class="fas fa-paper-plane"></i><h3>No sent memos</h3><p>You have not sent any memos yet, or none match this filter.</p></div>`;
+    return;
+  }
+  const modeLabels={all:'All Users',faculty:'By Faculty',department:'By Department',type:'By Account Type',manual:'Manual'};
+  const priIcons={low:'fa-flag',normal:'fa-flag',high:'fa-flag',urgent:'fa-bolt'};
+  const priLabels={low:'Low',normal:'Normal',high:'High',urgent:'Urgent'};
+  listEl.innerHTML=memos.map(m=>{
+    const dateStr=toMs(m.createdAt)?new Date(toMs(m.createdAt)).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    const pri=m.priority||'normal', status=m.status||'sent';
+    return `
+    <div class="memo-card" id="outbox-card-${m.id}">
+      <div class="memo-card-header" onclick="toggleOutboxMemo('${m.id}')">
+        <div class="unread-dot" style="opacity:0;"></div>
+        <div class="memo-card-sender-avatar" style="background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;"><i class="fas fa-paper-plane" style="color:white;font-size:0.9rem;"></i></div>
+        <div class="memo-card-header-info">
+          <div class="memo-card-header-top">
+            <span class="memo-card-from">${m.subject||'(No Subject)'}</span>
+            <span class="priority-badge ${pri}"><i class="fas ${priIcons[pri]}"></i>${priLabels[pri]}</span>
+            <span class="status-badge ${status}">${status==='sent'?'<i class="fas fa-check-double"></i> Sent':'<i class="fas fa-file-pen"></i> Draft'}</span>
+          </div>
+          <div class="memo-card-subject" style="color:var(--text-muted);">To: ${modeLabels[m.recipientMode]||'—'} · ${m.recipientCount||0} recipient(s)</div>
+          <div class="memo-card-preview">${m.body?m.body.substring(0,90)+'…':'(No content)'}</div>
+        </div>
+        <span class="memo-card-date">${dateStr}</span>
+        <i class="fas fa-chevron-down expand-chevron"></i>
+      </div>
+      <div class="memo-card-body">
+        <div class="memo-card-body-inner" id="outbody-${m.id}">
+          <div class="memo-meta-row">
+            <span><i class="fas fa-hashtag"></i>${m.refNumber||'—'}</span>
+            <span><i class="fas fa-calendar"></i>${m.date||'—'}</span>
+            <span><i class="fas fa-tag"></i>${(m.category||'general').charAt(0).toUpperCase()+(m.category||'general').slice(1)}</span>
+            <span><i class="fas fa-users"></i>${m.recipientCount||0} recipient(s)</span>
+            <span><i class="fas fa-inbox"></i>${modeLabels[m.recipientMode]||'—'}</span>
+          </div>
+          ${m.confidential?`<div class="confidential-banner"><i class="fas fa-lock"></i> Marked <strong>Confidential</strong></div>`:''}
+          <div class="memo-body-text">${escapeHtml(m.body||'(No content)')}</div>
+          <div class="memo-card-actions-bar">
+            ${status==='draft'?`<button class="mca-btn primary" onclick="sendDraftMemo('${m.id}')"><i class="fas fa-paper-plane"></i> Send Now</button>`:''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleOutboxMemo(id){
+  const card=document.getElementById(`outbox-card-${id}`);
+  if(!card) return;
+  const was=card.classList.contains('expanded');
+  document.querySelectorAll('.memo-card.expanded').forEach(c=>c.classList.remove('expanded'));
+  if(!was) card.classList.add('expanded');
+}
+
+async function sendDraftMemo(memoId){
+  try{
+    await db.collection('memos').doc(memoId).update({status:'sent',sentAt:firebase.firestore.FieldValue.serverTimestamp()});
+    showToast('Draft sent successfully');
+  }catch(e){ showToast(e.message,true); }
+}
+
+document.querySelectorAll('#pageOutbox .mftab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('#pageOutbox .mftab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    outboxFilter=tab.dataset.filter;
+    filterOutbox();
+  });
+});
+
+/* ══════════════════════════════════════════════════════════
+   ANALYTICS
+   ─ View tracking stored inside each user's own userInbox doc (no permission issues)
+   ─ The sender reads the memo's recipients' inbox entries to count reads
+══════════════════════════════════════════════════════════ */
+let analyticsData = [];
+let analyticsUnsubscribe = null;
+
+async function loadAnalytics(){
+  const listEl=document.getElementById('analyticsList');
+  listEl.innerHTML='<div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading analytics…</span></div>';
+  if(analyticsUnsubscribe) analyticsUnsubscribe();
+  try{
+    // Single-field index only (senderUid). Filter status + sort client-side — avoids composite index requirement.
+    analyticsUnsubscribe = db.collection('memos')
+      .where('senderUid','==',currentUser.uid)
+      .onSnapshot(snap=>{
+        const memos=[];
+        snap.forEach(d=>{ const data={id:d.id,...d.data()}; if(data.status==='sent') memos.push(data); });
+        // Count views from flat memoViews collection — each doc is memoId_uid
+        // We query all views for this sender's memos at once
+        const memoIds = memos.map(m=>m.id);
+        db.collection('memoViews')
+          .where('memoId','in', memoIds.slice(0,10)) // Firestore 'in' limit = 10
+          .get()
+          .then(viewSnap=>{
+            const countMap={};
+            viewSnap.forEach(d=>{ const mid=d.data().memoId; countMap[mid]=(countMap[mid]||0)+1; });
+            memos.forEach(m=>{ m.viewCount=countMap[m.id]||0; });
+            analyticsData=memos; filterAnalytics();
+          })
+          .catch(()=>{ analyticsData=memos; filterAnalytics(); });
+      }, err=>{
+        listEl.innerHTML=`<div class="memo-empty"><i class="fas fa-circle-exclamation"></i><h3>Could not load analytics</h3><p>${err.message}</p></div>`;
+      });
+  }catch(err){
+    listEl.innerHTML=`<div class="memo-empty"><i class="fas fa-circle-exclamation"></i><h3>Error</h3><p>${err.message}</p></div>`;
+  }
+}
+
+function filterAnalytics(){
+  const q=(document.getElementById('analyticsSearch')?.value||'').toLowerCase();
+  const sort=document.getElementById('analyticsSort')?.value||'newest';
+  let data=[...analyticsData];
+  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q));
+  if(sort==='oldest') data.sort((a,b)=>toMs(a.createdAt)-toMs(b.createdAt));
+  else if(sort==='views') data.sort((a,b)=>(b.viewCount||0)-(a.viewCount||0));
+  else data.sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
+  document.getElementById('analyticsCountLabel').textContent=`${data.length} memo${data.length!==1?'s':''}`;
+  renderAnalyticsList(data);
+}
+
+function renderAnalyticsList(memos){
+  const listEl=document.getElementById('analyticsList');
+  if(!memos.length){
+    listEl.innerHTML=`<div class="memo-empty"><i class="fas fa-chart-line"></i><h3>No sent memos yet</h3><p>Memos you send will appear here with view tracking.</p></div>`;
+    return;
+  }
+  const priIcons={low:'fa-flag',normal:'fa-flag',high:'fa-flag',urgent:'fa-bolt'};
+  const priLabels={low:'Low',normal:'Normal',high:'High',urgent:'Urgent'};
+  listEl.innerHTML=memos.map(m=>{
+    const dateStr=toMs(m.createdAt)?new Date(toMs(m.createdAt)).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'}):'—';
+    const vc=m.viewCount||0;
+    const rc=m.recipientCount||0;
+    const pct=rc>0?Math.round((vc/rc)*100):0;
+    const pillClass=vc===0?'zero':vc>=rc*0.5?'many':'some';
+    const pri=m.priority||'normal';
+    return `
+    <div class="analytics-memo-card" id="analytics-card-${m.id}">
+      <div class="analytics-card-header" onclick="toggleAnalyticsMemo('${m.id}')">
+        <div style="width:9px;height:9px;border-radius:50%;background:${vc>0?'var(--secondary)':'var(--input-border)'};flex-shrink:0;"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="analytics-subject">${m.subject||'(No Subject)'}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap;">
+            <span><i class="fas fa-calendar" style="margin-right:4px;"></i>${dateStr}</span>
+            <span><i class="fas fa-users" style="margin-right:4px;"></i>${rc} recipients</span>
+            <span class="priority-badge ${pri}" style="font-size:0.65rem;"><i class="fas ${priIcons[pri]}"></i>${priLabels[pri]}</span>
+          </div>
+        </div>
+        <div class="view-pill ${pillClass}"><i class="fas fa-eye"></i>${vc} view${vc!==1?'s':''} · ${pct}%</div>
+        <i class="fas fa-chevron-down expand-chevron"></i>
+      </div>
+      <div class="analytics-card-body">
+        <div class="analytics-card-body-inner" id="analytics-body-${m.id}">
+          <div class="analytics-stats-row">
+            <div class="analytics-stat-pill"><strong>${rc}</strong> <span>Total Recipients</span></div>
+            <div class="analytics-stat-pill"><strong>${vc}</strong> <span>Unique Views</span></div>
+            <div class="analytics-stat-pill"><strong>${pct}%</strong> <span>Open Rate</span></div>
+            <div class="analytics-stat-pill"><strong>${rc-vc}</strong> <span>Not Yet Read</span></div>
+          </div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text-muted);margin-bottom:10px;"><i class="fas fa-eye" style="margin-right:6px;color:var(--secondary);"></i>Who Viewed This Memo</div>
+          <div class="viewers-list" id="viewers-${m.id}">
+            <div class="analytics-viewers-loading"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Loading viewers…</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleAnalyticsMemo(id){
+  const card=document.getElementById(`analytics-card-${id}`);
+  if(!card) return;
+  const was=card.classList.contains('expanded');
+  document.querySelectorAll('.analytics-memo-card.expanded').forEach(c=>c.classList.remove('expanded'));
+  if(was) return;
+  card.classList.add('expanded');
+  await loadMemoViewers(id);
+}
+
+async function loadMemoViewers(memoId){
+  const listEl=document.getElementById(`viewers-${memoId}`);
+  if(!listEl) return;
+  listEl.innerHTML='<div class="analytics-viewers-loading"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Loading viewers…</div>';
+  try{
+    // Query flat memoViews collection where memoId matches
+    const snap = await db.collection('memoViews').where('memoId','==',memoId).get();
+    if(snap.empty){
+      listEl.innerHTML=`<div class="viewer-empty"><i class="fas fa-eye-slash"></i>No one has viewed this memo yet.</div>`;
+      return;
+    }
+    const viewerList=[];
+    snap.forEach(d=>viewerList.push(d.data()));
+    viewerList.sort((a,b)=>toMs(b.viewedAt)-toMs(a.viewedAt));
+    listEl.innerHTML=viewerList.map(v=>{
+      const initial=(v.name||'?')[0].toUpperCase();
+      const timeStr=v.viewedAt?new Date(toMs(v.viewedAt)).toLocaleString('en-NG',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+      return `<div class="viewer-item">
+        <div class="viewer-avatar">${initial}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="viewer-name">${v.name||'Unknown'}</div>
+          <div class="viewer-email">${v.email||'—'}</div>
+        </div>
+        <div class="viewer-time"><i class="fas fa-clock" style="margin-right:4px;"></i>${timeStr}</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    listEl.innerHTML=`<div class="viewer-empty"><i class="fas fa-circle-exclamation"></i>Failed to load viewers: ${e.message}</div>`;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MANAGE USERS
+══════════════════════════════════════════════════════════ */
+let allUsersData=[];
+
+async function loadAllUsers(){
+  const grid=document.getElementById('usersGrid');
+  grid.innerHTML='<div class="mu-loading"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;color:var(--text-faint);"></i><br><br>Loading users…</div>';
+  try{
+    const snap=await db.collection('allUsers').orderBy('fullName').get();
+    const users=[];
+    snap.forEach(d=>users.push({uid:d.id,...d.data()}));
+    const profileFetches=users.map(u=>
+      db.collection('userProfiles').doc(u.uid).get()
+        .then(p=>{if(p.exists) u.profilePictureUrl=p.data().profilePictureUrl||'';}).catch(()=>{})
+    );
+    await Promise.allSettled(profileFetches);
+    allUsersData=users;
+    renderUserGrid(allUsersData);
+  }catch(err){
+    grid.innerHTML=`<div class="mu-empty"><i class="fas fa-circle-exclamation"></i>Failed to load users.<br><small>${err.message}</small></div>`;
+  }
+}
+
+function renderUserGrid(users){
+  const grid=document.getElementById('usersGrid'), count=document.getElementById('muCount');
+  count.innerText=`${users.length} user${users.length!==1?'s':''}`;
+  if(!users.length){ grid.innerHTML='<div class="mu-empty" style="grid-column:1/-1"><i class="fas fa-users-slash"></i>No users found.</div>'; return; }
+  const typeIcons={staff:'fa-user',hod:'fa-chalkboard-teacher',dean:'fa-user-tie',vc:'fa-crown'};
+  const typeLabels={staff:'Staff',hod:'HOD',dean:'Dean',vc:'VC'};
+  grid.innerHTML=users.map(u=>{
+    const type=(u.accountType||'staff').toLowerCase();
+    const icon=typeIcons[type]||'fa-user', label=typeLabels[type]||type;
+    const avatar=u.profilePictureUrl?`<img src="${u.profilePictureUrl}" alt="${u.fullName}">`:`<i class="fas ${icon}"></i>`;
+    return `<div class="user-card" data-uid="${u.uid}">
+      <div class="user-card-top">
+        <div class="user-card-avatar">${avatar}</div>
+        <div style="flex:1;min-width:0;"><div class="user-card-name">${u.fullName||'—'}</div><div class="user-card-email">${u.email||'—'}</div></div>
+        <span class="acct-badge ${type}"><i class="fas ${icon}"></i>${label}</span>
+      </div>
+      <div class="user-card-meta">
+        ${u.faculty?`<span><i class="fas fa-university"></i>${u.faculty}</span>`:''}
+        ${u.department?`<span><i class="fas fa-building"></i>${u.department}</span>`:''}
+        ${u.phone?`<span><i class="fas fa-phone"></i>${u.phone}</span>`:''}
+      </div>
+      <div class="user-card-actions">
+        <button class="uca-btn edit" onclick="openEditUser('${u.uid}')"><i class="fas fa-pen"></i> Edit</button>
+        <button class="uca-btn delete" onclick="openDeleteUser('${u.uid}','${(u.fullName||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"><i class="fas fa-trash"></i> Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterUsers(){
+  const q=(document.getElementById('muSearch')?.value||'').toLowerCase();
+  const type=(document.getElementById('muTypeFilter')?.value||'').toLowerCase();
+  const filtered=allUsersData.filter(u=>{
+    const matchQ=!q||(u.fullName||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q);
+    const matchT=!type||(u.accountType||'').toLowerCase()===type;
+    return matchQ&&matchT;
+  });
+  renderUserGrid(filtered);
+}
+
+function openEditUser(uid){
+  const user=allUsersData.find(u=>u.uid===uid); if(!user) return;
+  document.getElementById('euUid').value=uid;
+  document.getElementById('euFullName').value=user.fullName||'';
+  document.getElementById('euEmail').value=user.email||'';
+  document.getElementById('euAccountType').value=user.accountType||'staff';
+  document.getElementById('euRole').value=user.role||'';
+  document.getElementById('euError').innerText='';
+  // Set faculty first, then populate and set dept
+  const facSel=document.getElementById('euFaculty');
+  facSel.value=user.faculty||'';
+  const deptSel=document.getElementById('euDepartment');
+  if(user.faculty){
+    deptSel.innerHTML=buildDeptOptions(user.faculty, user.department||'');
+  } else {
+    deptSel.innerHTML='<option value="">— Select Faculty first —</option>';
+  }
+  document.getElementById('editUserModalOverlay').classList.add('open');
+}
+
+document.getElementById('closeEditUserModal')?.addEventListener('click',()=>document.getElementById('editUserModalOverlay').classList.remove('open'));
+document.getElementById('cancelEditUserBtn')?.addEventListener('click',()=>document.getElementById('editUserModalOverlay').classList.remove('open'));
+document.getElementById('editUserModalOverlay')?.addEventListener('click',e=>{if(e.target===document.getElementById('editUserModalOverlay'))document.getElementById('editUserModalOverlay').classList.remove('open');});
+
+document.getElementById('saveEditUserBtn')?.addEventListener('click',async()=>{
+  const uid=document.getElementById('euUid').value;
+  const fullName=document.getElementById('euFullName').value.trim();
+  const accountType=document.getElementById('euAccountType').value;
+  const role=document.getElementById('euRole').value.trim();
+  const faculty=document.getElementById('euFaculty').value;
+  const department=document.getElementById('euDepartment').value;
+  const errDiv=document.getElementById('euError');
+  if(!fullName){errDiv.innerText='Full name is required.';return;}
+  const btn=document.getElementById('saveEditUserBtn');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving…';
+  try{
+    await db.collection('allUsers').doc(uid).set({fullName,accountType,role,faculty,department},{merge:true});
+    try{await db.collection('userProfiles').doc(uid).set({fullName,accountType,role,faculty,department,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){}
+    const idx=allUsersData.findIndex(u=>u.uid===uid);
+    if(idx>-1) Object.assign(allUsersData[idx],{fullName,accountType,role,faculty,department});
+    document.getElementById('editUserModalOverlay').classList.remove('open');
+    filterUsers();showToast('User updated successfully');
+  }catch(err){errDiv.innerText=err.message;}
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Save Changes';
+});
+
+function openDeleteUser(uid,name){
+  document.getElementById('delTargetUid').value=uid;
+  document.getElementById('delModalMsg').innerText=`This will permanently remove ${name}'s profile and stats from Firestore.`;
+  document.getElementById('delModalOverlay').classList.add('open');
+}
+document.getElementById('cancelDelBtn')?.addEventListener('click',()=>document.getElementById('delModalOverlay').classList.remove('open'));
+document.getElementById('delModalOverlay')?.addEventListener('click',e=>{if(e.target===document.getElementById('delModalOverlay'))document.getElementById('delModalOverlay').classList.remove('open');});
+document.getElementById('confirmDelBtn')?.addEventListener('click',async()=>{
+  const uid=document.getElementById('delTargetUid').value;
+  const btn=document.getElementById('confirmDelBtn');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Deleting…';
+  try{
+    await db.collection('userProfiles').doc(uid).delete();
+    await db.collection('allUsers').doc(uid).delete();
+    await db.collection('dashboardStats').doc(uid).delete();
+    allUsersData=allUsersData.filter(u=>u.uid!==uid);
+    document.getElementById('delModalOverlay').classList.remove('open');
+    filterUsers();showToast('User deleted successfully');
+  }catch(err){showToast(err.message,true);}
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-trash"></i> Delete';
+});
+
+/* ══════════════════════════════════════════════════════════
+   CREATE MEMO
+══════════════════════════════════════════════════════════ */
+const FACULTIES=['Faculty of Arts','Faculty of Science','Faculty of Social and Management Sciences','Faculty of Education','Faculty of Law','Faculty of Engineering and Technology','Faculty of Agriculture','College of Medicine and Health Sciences','Faculty of Computing','Postgraduate School','General Studies / Administration'];
+let manualSelectedUsers=[];
+
+async function initCreateMemo(){
+  const today=new Date().toISOString().split('T')[0];
+  const dateInput=document.getElementById('memoDate');
+  dateInput.value=today; dateInput.min=today;
+
+  const refInput=document.getElementById('memoRef');
+  refInput.value='Generating…';refInput.style.opacity='0.6';
+  try{
+    const counterRef=db.collection('_counters').doc('memoRef');
+    const newRef=await db.runTransaction(async t=>{
+      const snap=await t.get(counterRef);
+      const year=new Date().getFullYear();
+      let seq=1;
+      if(snap.exists&&snap.data().year===year) seq=(snap.data().seq||0)+1;
+      t.set(counterRef,{year,seq,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      return `AAUA/MEMO/${year}/${String(seq).padStart(4,'0')}`;
+    });
+    refInput.value=newRef;
+  }catch(e){
+    const y=new Date().getFullYear();
+    refInput.value=`AAUA/MEMO/${y}/${String(Math.floor(Math.random()*9000)+1000)}`;
+  }
+  refInput.style.opacity='1';
+
+  const grid=document.getElementById('facultyCheckGrid');
+  grid.innerHTML=FACULTIES.map(f=>`<label class="fcheck-item" data-faculty="${f}"><div class="fcheck-box"></div><span class="fcheck-label">${f}</span></label>`).join('');
+  grid.querySelectorAll('.fcheck-item').forEach(item=>item.addEventListener('click',e=>{e.preventDefault();item.classList.toggle('checked');}));
+
+  document.querySelectorAll('#rpType .fcheck-item').forEach(item=>{
+    const fresh=item.cloneNode(true);item.parentNode.replaceChild(fresh,item);
+    fresh.addEventListener('click',e=>{e.preventDefault();fresh.classList.toggle('checked');});
+  });
+
+  db.collection('allUsers').get().then(snap=>{
+    document.getElementById('allUsersCountBadge').innerHTML=`<i class="fas fa-users"></i> ${snap.size} user${snap.size!==1?'s':''} will receive this memo`;
+  }).catch(()=>{});
+
+  const bodyEl=document.getElementById('memoBody');
+  bodyEl.oninput=()=>{document.getElementById('memoCharCount').innerText=bodyEl.value.length+' characters';};
+
+  manualSelectedUsers=[];
+  document.getElementById('selectedRecipients').innerHTML='';
+  const si=document.getElementById('manualUserSearch');if(si) si.value='';
+  document.getElementById('manualSearchClear')?.classList.remove('visible');
+  document.getElementById('userPickDropdown').classList.remove('open');
+
+  document.getElementById('deptFacultySelect').value='';
+  const deptSel=document.getElementById('deptDeptSelect');
+  deptSel.innerHTML='<option value="">— Select Faculty first —</option>';
+  deptSel.disabled=true;
+  document.getElementById('deptMatchInfo2').textContent='';
+
+  document.querySelectorAll('.rtab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('.recipient-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
+}
+
+function loadDeptsByFaculty(faculty){
+  const deptSel=document.getElementById('deptDeptSelect');
+  const info=document.getElementById('deptMatchInfo2');
+  if(!faculty){ deptSel.innerHTML='<option value="">— Select Faculty first —</option>'; deptSel.disabled=true; info.textContent=''; return; }
+  const depts=FACULTY_DEPT_MAP[faculty]||[];
+  deptSel.innerHTML='<option value="">— Select Department —</option>'+depts.map(d=>`<option value="${d}">${d}</option>`).join('');
+  deptSel.disabled=false; info.textContent='';
+}
+
+function onDeptSelected(dept){
+  const info=document.getElementById('deptMatchInfo2');
+  if(!dept){info.textContent='';return;}
+  const matches=allUsersData.filter(u=>(u.department||'').toLowerCase()===dept.toLowerCase());
+  if(!matches.length) info.innerHTML='<i class="fas fa-circle-info" style="color:var(--text-faint);"></i> No users found in this department yet.';
+  else info.innerHTML=`<i class="fas fa-circle-check" style="color:var(--secondary);"></i> <strong>${matches.length}</strong> user(s) in <strong>${dept}</strong> will be included.`;
+}
+
+document.querySelectorAll('.rtab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.recipient-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    const panel=document.getElementById('rp'+tab.dataset.rmode.charAt(0).toUpperCase()+tab.dataset.rmode.slice(1));
+    if(panel) panel.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.priority-card').forEach(card=>{
+  card.addEventListener('click',()=>{
+    document.querySelectorAll('.priority-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('memoPriority').value=card.dataset.priority;
+  });
+});
+
+function insertMemoText(before,after){
+  const ta=document.getElementById('memoBody');
+  const start=ta.selectionStart,end=ta.selectionEnd;
+  const sel=ta.value.substring(start,end);
+  ta.value=ta.value.substring(0,start)+before+sel+after+ta.value.substring(end);
+  ta.focus();ta.selectionStart=ta.selectionEnd=start+before.length+sel.length+after.length;
+  document.getElementById('memoCharCount').innerText=ta.value.length+' characters';
+}
+function clearMemoBody(){document.getElementById('memoBody').value='';document.getElementById('memoCharCount').innerText='0 characters';}
+
+async function searchPickUsers(q){
+  const dropdown=document.getElementById('userPickDropdown');
+  const clearBtn=document.getElementById('manualSearchClear');
+  if(clearBtn) clearBtn.classList.toggle('visible',q.length>0);
+  if(!q.trim()){dropdown.classList.remove('open');return;}
+  dropdown.innerHTML='<div style="padding:14px;text-align:center;font-size:0.82rem;color:var(--text-muted);"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Searching…</div>';
+  dropdown.classList.add('open');
+  const ql=q.toLowerCase();
+  const fromAllUsers=allUsersData.filter(u=>
+    !manualSelectedUsers.find(s=>s.uid===u.uid)&&
+    ((u.fullName||'').toLowerCase().includes(ql)||(u.email||'').toLowerCase().includes(ql))
+  ).map(u=>({...u,_source:'allUsers'}));
+  let fromProfiles=[];
+  try{
+    const byEmail=await db.collection('userProfiles').where('email','>=',q).where('email','<=',q+'\uf8ff').limit(10).get();
+    byEmail.forEach(d=>{ const data={uid:d.id,...d.data(),_source:'userProfiles'}; if(!fromAllUsers.find(u=>u.uid===d.id)&&!manualSelectedUsers.find(s=>s.uid===d.id)) fromProfiles.push(data); });
+    const byName=await db.collection('userProfiles').orderBy('fullName').startAt(q).endAt(q+'\uf8ff').limit(10).get();
+    byName.forEach(d=>{ const data={uid:d.id,...d.data(),_source:'userProfiles'}; if(!fromAllUsers.find(u=>u.uid===d.id)&&!fromProfiles.find(u=>u.uid===d.id)&&!manualSelectedUsers.find(s=>s.uid===d.id)) fromProfiles.push(data); });
+  }catch(e){}
+  const merged=[...fromAllUsers,...fromProfiles].slice(0,10);
+  if(!merged.length){ dropdown.innerHTML='<div style="padding:14px;text-align:center;font-size:0.82rem;color:var(--text-muted);"><i class="fas fa-user-slash" style="margin-right:6px;"></i>No users found</div>'; return; }
+  dropdown.innerHTML=merged.map(u=>{
+    const av=u.profilePictureUrl?`<img src="${u.profilePictureUrl}" alt="${u.fullName}">`:`<i class="fas fa-user"></i>`;
+    const type=(u.accountType||'staff').toLowerCase();
+    return `<div class="pick-user-item" onclick="addManualRecipient('${u.uid}','${(u.fullName||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${u.email||''}','${u.profilePictureUrl||''}')">
+      <div class="pick-avatar">${av}</div>
+      <div class="pick-info"><div class="pick-name">${u.fullName||'—'}</div><div class="pick-email">${u.email||''}</div></div>
+      <span class="acct-badge ${type}">${type.toUpperCase()}</span>
+    </div>`;
+  }).join('');
+}
+
+function clearManualSearch(){
+  const inp=document.getElementById('manualUserSearch');if(inp) inp.value='';
+  document.getElementById('userPickDropdown').classList.remove('open');
+  document.getElementById('manualSearchClear')?.classList.remove('visible');
+}
+
+function addManualRecipient(uid,name,email,pic){
+  if(manualSelectedUsers.find(u=>u.uid===uid)) return;
+  manualSelectedUsers.push({uid,fullName:name,email,profilePictureUrl:pic});
+  renderSelectedRecipients();
+  document.getElementById('manualUserSearch').value='';
+  document.getElementById('userPickDropdown').classList.remove('open');
+  document.getElementById('manualSearchClear')?.classList.remove('visible');
+}
+
+function removeManualRecipient(uid){
+  manualSelectedUsers=manualSelectedUsers.filter(u=>u.uid!==uid);
+  renderSelectedRecipients();
+}
+
+function renderSelectedRecipients(){
+  const c=document.getElementById('selectedRecipients');
+  c.innerHTML=manualSelectedUsers.map(u=>{
+    const av=u.profilePictureUrl?`<img src="${u.profilePictureUrl}" alt="${u.fullName}">`:`<i class="fas fa-user"></i>`;
+    return `<div class="recip-chip"><div class="recip-chip-avatar">${av}</div>${u.fullName}<span class="recip-chip-remove" onclick="removeManualRecipient('${u.uid}')">✕</span></div>`;
+  }).join('');
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.manual-search-wrap')) document.getElementById('userPickDropdown')?.classList.remove('open');
+});
+
+async function collectRecipients(mode){
+  if(mode==='all'){const snap=await db.collection('allUsers').get();const uids=[];snap.forEach(d=>uids.push(d.id));return uids;}
+  if(mode==='faculty'){
+    const sel=[...document.querySelectorAll('#facultyCheckGrid .fcheck-item.checked')].map(i=>i.dataset.faculty);
+    if(!sel.length) return null;
+    return allUsersData.filter(u=>sel.includes(u.faculty)).map(u=>u.uid);
+  }
+  if(mode==='department'){
+    const fac=document.getElementById('deptFacultySelect').value;
+    const dept=document.getElementById('deptDeptSelect').value;
+    if(!fac||!dept) return null;
+    return allUsersData.filter(u=>(u.department||'').toLowerCase()===dept.toLowerCase()).map(u=>u.uid);
+  }
+  if(mode==='type'){
+    const sel=[...document.querySelectorAll('#rpType .fcheck-item.checked')].map(i=>{
+      const txt=(i.querySelector('.fcheck-label')?.innerText||'').trim().toLowerCase();
+      if(txt.includes('staff')) return 'staff'; if(txt.includes('hod')) return 'hod';
+      if(txt.includes('dean')) return 'dean'; if(txt.includes('vc')) return 'vc'; return null;
+    }).filter(Boolean);
+    if(!sel.length) return null;
+    return allUsersData.filter(u=>sel.includes((u.accountType||'staff').toLowerCase())).map(u=>u.uid);
+  }
+  if(mode==='manual'){if(!manualSelectedUsers.length) return null;return manualSelectedUsers.map(u=>u.uid);}
+  return [];
+}
+
+async function submitMemo(isDraft){
+  const subject=document.getElementById('memoSubject').value.trim();
+  const body=document.getElementById('memoBody').value.trim();
+  const ref=document.getElementById('memoRef').value.trim();
+  const date=document.getElementById('memoDate').value;
+  const category=document.getElementById('memoCategory').value;
+  const priority=document.getElementById('memoPriority').value;
+  const mode=document.querySelector('.rtab.active')?.dataset.rmode||'all';
+  const confidential=document.getElementById('memoConfidential').checked;
+  const resultEl=document.getElementById('memoResult');
+  const resultMsg=document.getElementById('memoResultMsg');
+
+  const showMemoResult=(msg,type)=>{
+    resultEl.className=`memo-result ${type} show`;
+    resultEl.querySelector('i').className=type==='success'?'fas fa-circle-check':'fas fa-circle-exclamation';
+    resultMsg.innerText=msg;
+    setTimeout(()=>resultEl.classList.remove('show'),7000);
+  };
+
+  if(!subject){showMemoResult('Memo subject is required.','error');return;}
+  if(!isDraft&&!body){showMemoResult('Memo body cannot be empty.','error');return;}
+
+  const btn=isDraft?document.getElementById('memoDraftBtn'):document.getElementById('memoSendBtn');
+  btn.disabled=true;btn.innerHTML=isDraft?'<i class="fas fa-spinner fa-spin"></i> Saving…':'<i class="fas fa-spinner fa-spin"></i> Sending…';
+
+  let recipients=[];
+  if(!isDraft){
+    recipients=await collectRecipients(mode);
+    if(recipients===null){
+      showMemoResult('Please complete the recipient selection.','error');
+      btn.disabled=false;btn.innerHTML=isDraft?'<i class="fas fa-floppy-disk"></i> Save as Draft':'<i class="fas fa-paper-plane"></i> Send Memo';
+      return;
+    }
+  }
+
+  try{
+    const memoDoc={
+      subject,body,refNumber:ref,date,category,priority,
+      recipientMode:mode,recipientUids:recipients,recipientCount:recipients.length,
+      confidential,
+      status:isDraft?'draft':'sent',
+      senderUid:currentUser.uid,
+      senderName:currentUser.displayName||currentUser.email,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      sentAt:isDraft?null:firebase.firestore.FieldValue.serverTimestamp()
+    };
+    const ref2=await db.collection('memos').add(memoDoc);
+
+    if(!isDraft&&recipients.length){
+      const chunkSize=400;
+      for(let i=0;i<recipients.length;i+=chunkSize){
+        const chunk=recipients.slice(i,i+chunkSize);
+        const batch=db.batch();
+        chunk.forEach(uid=>{
+          const inboxRef=db.collection('userInbox').doc(uid).collection('memos').doc(ref2.id);
+          batch.set(inboxRef,{memoId:ref2.id,subject,priority,category,senderName:memoDoc.senderName,senderUid:currentUser.uid,date,confidential,read:false,acknowledged:false,receivedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        });
+        await batch.commit();
+      }
+      await Promise.allSettled(recipients.map(uid=>
+        db.collection('dashboardStats').doc(uid).update({totalReceived:firebase.firestore.FieldValue.increment(1),totalUnread:firebase.firestore.FieldValue.increment(1)}).catch(()=>
+          db.collection('dashboardStats').doc(uid).set({totalReceived:1,totalOpened:0,totalUnread:1,awaitingAction:0,updatedAt:firebase.firestore.FieldValue.serverTimestamp()})
+        )
+      ));
+
+      // Push alerts to each recipient (batch alerts)
+      const senderName2 = currentUser.displayName || currentUser.email;
+      const alertChunkSize = 400;
+      for(let i=0; i<recipients.length; i+=alertChunkSize){
+        const chunk = recipients.slice(i, i+alertChunkSize);
+        const alertBatch = db.batch();
+        chunk.forEach(uid=>{
+          const alertRef = db.collection('alerts').doc();
+          alertBatch.set(alertRef, {
+            recipientUid: uid, type:'received', priority,
+            title: priority==='urgent' ? `🔴 Urgent Memo: ${subject}` : `New Memo: ${subject}`,
+            body: `From ${senderName2}${category&&category!=='general'?' · '+category.charAt(0).toUpperCase()+category.slice(1):''}`,
+            memoId: ref2.id, read: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+        await alertBatch.commit().catch(()=>{});
+      }
+
+      // Push a "sent" alert to the sender themselves
+      await pushAlert(currentUser.uid, 'sent',
+        `Memo Sent: ${subject}`,
+        `Successfully delivered to ${recipients.length} recipient(s).`,
+        priority
+      );
+    }
+
+    showMemoResult(isDraft?'Memo saved as draft successfully.':`Memo sent to ${recipients.length} recipient(s) successfully.`,'success');
+    if(!isDraft) resetMemoForm();
+  }catch(err){showMemoResult(err.message,'error');}
+
+  btn.disabled=false;btn.innerHTML=isDraft?'<i class="fas fa-floppy-disk"></i> Save as Draft':'<i class="fas fa-paper-plane"></i> Send Memo';
+}
+
+document.getElementById('memoSendBtn')?.addEventListener('click',()=>submitMemo(false));
+document.getElementById('memoDraftBtn')?.addEventListener('click',()=>submitMemo(true));
+document.getElementById('memoClearBtn')?.addEventListener('click',resetMemoForm);
+
+function resetMemoForm(){
+  ['memoSubject','memoBody'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('memoDate').value=today;
+  document.getElementById('memoDate').min=today;
+  document.getElementById('memoCategory').value='general';
+  document.getElementById('memoPriority').value='normal';
+  document.querySelectorAll('.priority-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelector('.priority-card[data-priority="normal"]')?.classList.add('selected');
+  document.querySelectorAll('.rtab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('.recipient-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
+  document.querySelectorAll('.fcheck-item').forEach(i=>i.classList.remove('checked'));
+  document.getElementById('deptFacultySelect').value='';
+  const deptSel=document.getElementById('deptDeptSelect');
+  deptSel.innerHTML='<option value="">— Select Faculty first —</option>';deptSel.disabled=true;
+  document.getElementById('deptMatchInfo2').textContent='';
+  manualSelectedUsers=[];
+  document.getElementById('selectedRecipients').innerHTML='';
+  const ms=document.getElementById('manualUserSearch');if(ms) ms.value='';
+  document.getElementById('manualSearchClear')?.classList.remove('visible');
+  document.getElementById('userPickDropdown').classList.remove('open');
+  document.getElementById('memoCharCount').innerText='0 characters';
+  document.getElementById('memoResult')?.classList.remove('show');
+  document.getElementById('memoConfidential').checked=false;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CREATE USER
+══════════════════════════════════════════════════════════ */
+document.querySelectorAll('.account-type-card').forEach(card=>{
+  card.addEventListener('click',()=>{
+    document.querySelectorAll('.account-type-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('cuAccountType').value=card.dataset.type;
+  });
+});
+
+function checkPwdStrength(pwd){
+  const fill=document.getElementById('pwdStrengthFill');const label=document.getElementById('pwdStrengthLabel');
+  if(!fill) return;
+  let score=0;
+  if(pwd.length>=6) score++;if(pwd.length>=10) score++;
+  if(/[A-Z]/.test(pwd)) score++;if(/[0-9]/.test(pwd)) score++;if(/[^A-Za-z0-9]/.test(pwd)) score++;
+  const levels=[{w:'0%',bg:'transparent',txt:'Enter a password'},{w:'25%',bg:'#e63946',txt:'Weak'},{w:'50%',bg:'#f4a261',txt:'Fair'},{w:'75%',bg:'#2a9d8f',txt:'Good'},{w:'100%',bg:'#2c7a4d',txt:'Strong'}];
+  const lvl=levels[Math.min(score,4)];
+  fill.style.width=lvl.w;fill.style.background=lvl.bg;label.innerText=lvl.txt;
+}
+
+function togglePwd(inputId,btn){
+  const inp=document.getElementById(inputId);const icon=btn.querySelector('i');
+  if(inp.type==='password'){inp.type='text';icon.classList.replace('fa-eye','fa-eye-slash');}
+  else{inp.type='password';icon.classList.replace('fa-eye-slash','fa-eye');}
+}
+
+function showCuResult(msg,type='success'){
+  const el=document.getElementById('cuResult');const txt=document.getElementById('cuResultMsg');
+  el.className=`cu-result ${type} show`;txt.innerText=msg;
+  el.querySelector('i').className=type==='success'?'fas fa-circle-check':'fas fa-circle-exclamation';
+  setTimeout(()=>el.classList.remove('show'),6000);
+}
+
+function resetCreateUserForm(){
+  ['cuFullName','cuEmail','cuPhone','cuDOB','cuStaffId','cuOffice','cuRole','cuPassword','cuPasswordConfirm'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
+  document.getElementById('cuGender').value='';
+  document.getElementById('cuFaculty').value='';
+  document.getElementById('cuDepartment').innerHTML='<option value="">— Select Faculty first —</option>';
+  document.getElementById('cuAccountType').value='staff';
+  document.querySelectorAll('.account-type-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelector('.account-type-card[data-type="staff"]')?.classList.add('selected');
+  const fill=document.getElementById('pwdStrengthFill');if(fill){fill.style.width='0%';fill.style.background='transparent';}
+  const lbl=document.getElementById('pwdStrengthLabel');if(lbl) lbl.innerText='Enter a password';
+  document.getElementById('cuResult')?.classList.remove('show');
+}
+document.getElementById('cuResetBtn')?.addEventListener('click',resetCreateUserForm);
+
+document.getElementById('cuSubmitBtn')?.addEventListener('click',async()=>{
+  const btn=document.getElementById('cuSubmitBtn');
+  const fullName=document.getElementById('cuFullName').value.trim();
+  const email=document.getElementById('cuEmail').value.trim();
+  const password=document.getElementById('cuPassword').value;
+  const confirm=document.getElementById('cuPasswordConfirm').value;
+  const acctType=document.getElementById('cuAccountType').value;
+  const phone=document.getElementById('cuPhone').value.trim();
+  const dob=document.getElementById('cuDOB').value;
+  const gender=document.getElementById('cuGender').value;
+  const staffId=document.getElementById('cuStaffId').value.trim();
+  const faculty=document.getElementById('cuFaculty').value.trim();
+  const department=document.getElementById('cuDepartment').value.trim();
+  const office=document.getElementById('cuOffice').value.trim();
+  const role=document.getElementById('cuRole').value.trim();
+
+  if(!fullName){showCuResult('Full name is required.','error');return;}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showCuResult('Enter a valid email address.','error');return;}
+  if(!password||password.length<6){showCuResult('Password must be at least 6 characters.','error');return;}
+  if(password!==confirm){showCuResult('Passwords do not match.','error');return;}
+
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+  try{
+    const apiKey=firebase.app().options.apiKey;
+    const authRes=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,displayName:fullName,returnSecureToken:false})});
+    const authData=await authRes.json();
+    if(authData.error){
+      const code=authData.error.message;
+      if(code==='EMAIL_EXISTS') throw new Error('This email address is already registered.');
+      if(code==='INVALID_EMAIL') throw new Error('The email address is not valid.');
+      throw new Error(authData.error.message);
+    }
+    const newUid=authData.localId;
+    const profileData={fullName,email,phone,dateOfBirth:dob,gender,staffId,faculty,department,office,role:role||acctType,accountType:acctType,profilePictureUrl:'',primaryColor:'#0f172b',secondaryColor:'#3b5fcf',darkMode:false,createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    await db.collection('userProfiles').doc(newUid).set(profileData);
+    await db.collection('allUsers').doc(newUid).set({uid:newUid,fullName,email,phone,faculty,department,accountType:acctType,role:role||acctType,profilePictureUrl:'',createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),active:true});
+    await db.collection('dashboardStats').doc(newUid).set({totalReceived:0,totalOpened:0,totalUnread:0,awaitingAction:0,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    showCuResult(`Account created for ${fullName} (${email}) · Type: ${acctType.toUpperCase()}`,'success');
+    resetCreateUserForm();
+  }catch(err){showCuResult(err.message,'error');}
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-user-plus"></i> Create Account';
+});
+
+/* ══════════════════════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════════════════════ */
+document.querySelectorAll('.stab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.settings-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab'+tab.dataset.tab)?.classList.add('active');
+  });
+});
+
+function populateSettingsForm(){
+  if(!currentUser) return;
+  db.collection('userProfiles').doc(currentUser.uid).get().then(snap=>{
+    if(!snap.exists) return;
+    const d=snap.data();
+    document.getElementById('sFullName').value=d.fullName||'';
+    document.getElementById('sEmail').value=d.email||currentUser.email||'';
+    document.getElementById('sRole').value=d.role||'';
+    document.getElementById('sDOB').value=d.dateOfBirth||'';
+    document.getElementById('darkModeToggle').checked=!!d.darkMode;
+    // Set faculty and populate dept dropdown
+    const facSel=document.getElementById('sFaculty');
+    facSel.value=d.faculty||'';
+    const deptSel=document.getElementById('sDepartment');
+    if(d.faculty){
+      deptSel.innerHTML=buildDeptOptions(d.faculty, d.department||'');
+    } else {
+      deptSel.innerHTML='<option value="">— Select Faculty first —</option>';
+    }
+    if(d.notifications){
+      document.getElementById('notifNewMemo').checked=!!d.notifications.newMemo;
+      document.getElementById('notifAction').checked=!!d.notifications.actionRequired;
+      document.getElementById('notifAnnounce').checked=!!d.notifications.announcements;
+      document.getElementById('notifEmail').checked=!!d.notifications.email;
+    }
+    const currentAvatarSrc=d.profilePictureUrl||'';
+    if(currentAvatarSrc){
+      const circle=document.getElementById('settingsAvatarCircle');
+      document.getElementById('settingsAvatarIcon').style.display='none';
+      let img=circle.querySelector('img');
+      if(!img){img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';circle.appendChild(img);}
+      img.src=currentAvatarSrc;syncAvatarSelection(currentAvatarSrc);
+    }
+    const p=d.primaryColor||'#0f172b',s=d.secondaryColor||'#3b5fcf';
+    syncPickerUI(p,s);
+    document.querySelectorAll('.preset-chip').forEach(chip=>chip.classList.toggle('selected',chip.dataset.primary===p&&chip.dataset.secondary===s));
+  });
+}
+
+let selectedAvatarSrc=null;
+const avatarModalOverlay=document.getElementById('avatarModalOverlay');
+document.getElementById('openAvatarModalBtn')?.addEventListener('click',()=>avatarModalOverlay.classList.add('open'));
+document.getElementById('closeAvatarModalBtn')?.addEventListener('click',()=>avatarModalOverlay.classList.remove('open'));
+avatarModalOverlay?.addEventListener('click',e=>{if(e.target===avatarModalOverlay)avatarModalOverlay.classList.remove('open');});
+
+document.querySelectorAll('.avatar-option').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    document.querySelectorAll('.avatar-option').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');selectedAvatarSrc=opt.dataset.src;
+    const circle=document.getElementById('settingsAvatarCircle');
+    document.getElementById('settingsAvatarIcon').style.display='none';
+    let img=circle.querySelector('img');
+    if(!img){img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';circle.appendChild(img);}
+    img.src=selectedAvatarSrc;
+    setTimeout(()=>avatarModalOverlay.classList.remove('open'),300);
+  });
+});
+
+function syncAvatarSelection(currentSrc){document.querySelectorAll('.avatar-option').forEach(opt=>opt.classList.toggle('selected',opt.dataset.src===currentSrc));}
+
+document.getElementById('saveProfileBtn')?.addEventListener('click',async()=>{
+  const btn=document.getElementById('saveProfileBtn');
+  const fullName=document.getElementById('sFullName').value.trim();
+  if(!fullName){showToast('Full name is required',true);return;}
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving...';
+  try{
+    const existing=await db.collection('userProfiles').doc(currentUser.uid).get();
+    const profilePictureUrl=selectedAvatarSrc||(existing.exists?(existing.data().profilePictureUrl||''):'');
+    const faculty=document.getElementById('sFaculty').value;
+    const department=document.getElementById('sDepartment').value;
+    await db.collection('userProfiles').doc(currentUser.uid).set({
+      fullName,email:currentUser.email,
+      faculty,department,
+      role:document.getElementById('sRole').value.trim(),
+      dateOfBirth:document.getElementById('sDOB').value,
+      profilePictureUrl,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    await currentUser.updateProfile({displayName:fullName});
+    selectedAvatarSrc=null;showToast('Profile saved successfully');
+  }catch(err){showToast(err.message,true);}
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Save Profile';
+});
+
+function wireColorPair(pickerId,hexId){
+  const picker=document.getElementById(pickerId),hex=document.getElementById(hexId);
+  picker?.addEventListener('input',()=>{hex.value=picker.value;updatePreviewBar();});
+  hex?.addEventListener('input',()=>{if(/^#[0-9a-fA-F]{6}$/.test(hex.value)){picker.value=hex.value;updatePreviewBar();}});
+}
+wireColorPair('primaryColorPicker','primaryColorHex');
+wireColorPair('secondaryColorPicker','secondaryColorHex');
+
+function updatePreviewBar(){
+  const p=document.getElementById('primaryColorHex').value,s=document.getElementById('secondaryColorHex').value;
+  const bar=document.getElementById('themePreviewBar');if(bar) bar.style.background=`linear-gradient(135deg,${p},${s})`;
+}
+
+document.querySelectorAll('.preset-chip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    document.querySelectorAll('.preset-chip').forEach(c=>c.classList.remove('selected'));
+    chip.classList.add('selected');syncPickerUI(chip.dataset.primary,chip.dataset.secondary);updatePreviewBar();
+  });
+});
+
+document.getElementById('saveThemeBtn')?.addEventListener('click',async()=>{
+  const primary=document.getElementById('primaryColorHex').value,secondary=document.getElementById('secondaryColorHex').value;
+  const darkMode=document.getElementById('darkModeToggle').checked;
+  if(!/^#[0-9a-fA-F]{6}$/.test(primary)||!/^#[0-9a-fA-F]{6}$/.test(secondary)){showToast('Enter valid hex colors e.g. #0f172b',true);return;}
+  applyTheme(primary,secondary);applyDarkMode(darkMode);
+  await db.collection('userProfiles').doc(currentUser.uid).set({primaryColor:primary,secondaryColor:secondary,darkMode,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  showToast('Theme applied & saved');
+});
+
+document.getElementById('darkModeToggle')?.addEventListener('change',e=>applyDarkMode(e.target.checked));
+
+document.getElementById('savePwdBtn')?.addEventListener('click',async()=>{
+  const current=document.getElementById('sCurrentPwd').value,newPwd=document.getElementById('sNewPwd').value,confirm=document.getElementById('sConfirmPwd').value;
+  const errDiv=document.getElementById('pwdError');errDiv.innerText='';
+  if(!current||!newPwd||!confirm){errDiv.innerText='All fields required.';return;}
+  if(newPwd!==confirm){errDiv.innerText='Passwords do not match.';return;}
+  if(newPwd.length<6){errDiv.innerText='Min 6 characters required.';return;}
+  try{
+    const cred=firebase.auth.EmailAuthProvider.credential(currentUser.email,current);
+    await currentUser.reauthenticateWithCredential(cred);await currentUser.updatePassword(newPwd);
+    ['sCurrentPwd','sNewPwd','sConfirmPwd'].forEach(id=>document.getElementById(id).value='');
+    showToast('Password updated successfully');
+  }catch(err){errDiv.innerText=err.message;}
+});
+
+document.getElementById('saveNotifBtn')?.addEventListener('click',async()=>{
+  await db.collection('userProfiles').doc(currentUser.uid).set({notifications:{newMemo:document.getElementById('notifNewMemo').checked,actionRequired:document.getElementById('notifAction').checked,announcements:document.getElementById('notifAnnounce').checked,email:document.getElementById('notifEmail').checked},updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  showToast('Notification preferences saved');
+});
+
+/* ══════════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════════ */
+async function initDashboard(){
+  if(!currentUser) return;
+  await loadSavedTheme(currentUser.uid);
+  db.collection('allUsers').get().then(snap=>{allUsersData=[];snap.forEach(d=>allUsersData.push({uid:d.id,...d.data()}));}).catch(()=>{});
+
+  db.collection('userProfiles').doc(currentUser.uid).onSnapshot(async snap=>{
+    if(snap.exists){renderProfileHero(snap.data());}
+    else{
+      const stub={fullName:currentUser.displayName||currentUser.email.split('@')[0],email:currentUser.email,department:'',faculty:'',phone:'',gender:'',staffId:'',office:'',role:'Staff Member',accountType:'staff',dateOfBirth:'',profilePictureUrl:'',primaryColor:'#0f172b',secondaryColor:'#3b5fcf',darkMode:false,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+      await db.collection('userProfiles').doc(currentUser.uid).set(stub);renderProfileHero(stub);
+    }
+  });
+
+  // ── Stats: computed live from the inbox subcollection ──
+  db.collection('userInbox').doc(currentUser.uid).collection('memos')
+    .onSnapshot(snap=>{
+      const memos=[]; snap.forEach(d=>memos.push({id:d.id,...d.data()}));
+      const totalReceived  = memos.length;
+      const totalUnread    = memos.filter(m=>!m.read).length;
+      const totalOpened    = memos.filter(m=>m.read).length;
+      const awaitingAction = totalUnread;
+      document.getElementById('totalReceived').innerText  = totalReceived;
+      document.getElementById('totalOpened').innerText    = totalOpened;
+      document.getElementById('totalUnread').innerText    = totalUnread;
+      document.getElementById('awaitingAction').innerText = awaitingAction;
+      inboxData = memos;
+      updateNavInboxBadge();
+      updateAlertsBadge();
+    }, err=>{
+      // Permission error — show zeros rather than breaking
+      ['totalReceived','totalOpened','totalUnread','awaitingAction'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.innerText='0';
+      });
+      console.warn('Stats load error:', err.message);
+      showRulesBanner(err);
+    });
+
+  const newsList=document.getElementById('newsList');
+  db.collection('companyNews').orderBy('date','desc').limit(4).onSnapshot(snap=>{
+    if(!snap.empty){
+      newsList.innerHTML='';
+      snap.forEach(doc=>{const n=doc.data();newsList.innerHTML+=`<div class="news-item"><div><span class="news-badge"><i class="far fa-calendar-alt"></i> ${n.dateStr||'Recent'}</span></div><div style="flex:1"><div class="news-title">${n.title}</div><div class="news-meta">${n.content}</div></div></div>`;});
+    }else{
+      newsList.innerHTML=`<div class="news-item"><div><span class="news-badge">29 Apr 2026</span></div><div><div class="news-title">AAUA launches digital memo AI assistant</div><div class="news-meta">New features boost productivity.</div></div></div>
+<div class="news-item"><div><span class="news-badge">26 Apr 2026</span></div><div><div class="news-title">Council approves hybrid work expansion</div><div class="news-meta">Updated guidelines effective May 2026.</div></div></div>
+<div class="news-item"><div><span class="news-badge">22 Apr 2026</span></div><div><div class="news-title">Sustainability & Green Campus Week 2026</div><div class="news-meta">Keynote sessions and workshops.</div></div></div>`;
+    }
+  });
+
+  // Listen to alerts collection for badge
+  db.collection('alerts')
+    .where('recipientUid','==',currentUser.uid)
+    .onSnapshot(snap=>{
+      alertsData=[]; snap.forEach(d=>alertsData.push({id:d.id,...d.data()}));
+      updateAlertsBadge();
+    }, ()=>{});
+
+  adjustLogoSize();window.addEventListener('resize',adjustLogoSize);
+}
+
+function renderProfileHero(data){
+  const{fullName,email,department,faculty,role,dateOfBirth,profilePictureUrl}=data;
+  document.getElementById('userNameDisplay').innerText=fullName||'—';
+  document.getElementById('userEmailDisplay').innerText=email||currentUser?.email||'—';
+  document.getElementById('userRoleDisplay').innerText=role||'Staff Member';
+  document.getElementById('deptDisplay').innerText=department||'No department set';
+  document.getElementById('facDisplay').innerText=faculty||'No faculty set';
+  if(dateOfBirth){try{document.getElementById('dobDisplay').innerText=new Date(dateOfBirth).toLocaleDateString('en-NG',{day:'numeric',month:'long',year:'numeric'});}catch{document.getElementById('dobDisplay').innerText=dateOfBirth;}}
+  else{document.getElementById('dobDisplay').innerText='Not set';}
+  const heroLarge=document.getElementById('profileAvatarLarge'),heroIcon=document.getElementById('heroAvatarIcon');
+  const navAvatar=document.getElementById('navAvatar'),navIcon=document.getElementById('navAvatarIcon');
+  if(profilePictureUrl){
+    heroIcon.style.display='none';let img=document.getElementById('heroAvatarImg');
+    if(!img){img=document.createElement('img');img.id='heroAvatarImg';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';heroLarge.appendChild(img);}
+    img.src=profilePictureUrl;
+    navIcon.style.display='none';let navImg=document.getElementById('navAvatarImg');
+    if(!navImg){navImg=document.createElement('img');navImg.id='navAvatarImg';navAvatar.insertBefore(navImg,navIcon);}
+    navImg.src=profilePictureUrl;
+  }else{
+    heroIcon.style.display='';navIcon.style.display='';
+    document.getElementById('heroAvatarImg')?.remove();
+    document.getElementById('navAvatarImg')?.remove();
+  }
+}
+
+function adjustLogoSize(){
+  const w=window.innerWidth;const svg=document.querySelector('.navbar-wordmark-icon svg');const text=document.querySelector('.navbar-wordmark-name');
+  if(!svg) return;
+  let size=28,fs=1.45;
+  if(w>=1400){size=32;fs=1.7;}else if(w>=1200){size=30;fs=1.55;}else if(w>=992){size=28;fs=1.45;}else if(w>=768){size=24;fs=1.25;}else if(w>=576){size=22;fs=1.15;}else{size=20;fs=1;}
+  svg.setAttribute('width',size);svg.setAttribute('height',size);text.style.fontSize=fs+'rem';
+}
+
+function showToast(msg='Saved',isError=false){
+  const toast=document.getElementById('successToast');document.getElementById('toastMsg').innerText=msg;
+  toast.style.background=isError?'#e63946':'var(--primary)';toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),3200);
+}
+
+
+/* Hamburger */
+const sidebar=document.getElementById('sidebar'),hamburgerBtn=document.getElementById('hamburgerToggleBtn'),mobileOverlay=document.getElementById('mobileOverlay');
+const isDesktop=()=>window.innerWidth>=768;
+function setSidebarState(open){if(!isDesktop()){sidebar.classList.toggle('open-mobile',open);mobileOverlay?.classList.toggle('active',open);}}
+hamburgerBtn?.addEventListener('click',()=>{if(!isDesktop()) setSidebarState(!sidebar.classList.contains('open-mobile'));});
+mobileOverlay?.addEventListener('click',()=>setSidebarState(false));
+window.addEventListener('resize',()=>{if(isDesktop()) setSidebarState(false);});
+
+function toggleDropdown(id){
+  const el=document.getElementById(id);const wasOpen=el.classList.contains('open');
+  document.querySelectorAll('.nav-dropdown').forEach(d=>d.classList.remove('open'));
+  if(!wasOpen) el.classList.add('open');
+}
+
+/* ══════════════════════════════════════════════════════════
+   ALERTS
+══════════════════════════════════════════════════════════ */
+let alertsData = [];
+let alertsFilter = 'all';
+
+function updateAlertsBadge(){
+  const unread = alertsData.filter(a=>!a.read).length;
+  const badge = document.getElementById('navAlertBadge');
+  if(!badge) return;
+  badge.style.display = unread > 0 ? 'inline-flex' : 'none';
+  badge.textContent = unread > 9 ? '9+' : unread;
+}
+
+async function loadAlerts(){
+  const listEl = document.getElementById('alertsList');
+  listEl.innerHTML = '<div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading alerts…</span></div>';
+
+  // Real-time listener
+  // Flat 'alerts' collection filtered by recipientUid — single-field index, no composite needed
+  db.collection('alerts')
+    .where('recipientUid','==',currentUser.uid)
+    .onSnapshot(snap=>{
+      alertsData = [];
+      snap.forEach(d=>alertsData.push({id:d.id,...d.data()}));
+      // Sort newest first client-side
+      alertsData.sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
+      updateAlertCounts();
+      renderAlerts();
+      updateAlertsBadge();
+    }, err=>{
+      listEl.innerHTML = `<div class="alerts-empty"><i class="fas fa-circle-exclamation"></i><h3>Could not load alerts</h3><p>${err.message}</p></div>`;
+    });
+}
+
+function updateAlertCounts(){
+  const all = alertsData.length;
+  const received = alertsData.filter(a=>a.type==='received').length;
+  const sent = alertsData.filter(a=>a.type==='sent').length;
+  const unread = alertsData.filter(a=>!a.read).length;
+  document.getElementById('alertCountAll').textContent = all;
+  document.getElementById('alertCountReceived').textContent = received;
+  document.getElementById('alertCountSent').textContent = sent;
+  document.getElementById('alertCountUnread').textContent = unread;
+}
+
+function renderAlerts(){
+  const listEl = document.getElementById('alertsList');
+  let data = [...alertsData];
+  if(alertsFilter === 'received') data = data.filter(a=>a.type==='received');
+  else if(alertsFilter === 'sent') data = data.filter(a=>a.type==='sent');
+  else if(alertsFilter === 'unread') data = data.filter(a=>!a.read);
+
+  if(!data.length){
+    listEl.innerHTML = `<div class="alerts-empty"><i class="fas fa-bell-slash"></i><h3>No alerts here</h3><p>Notifications about your memos will appear here.</p></div>`;
+    return;
+  }
+
+  const priColors = { urgent:'alert-icon-wrap urgent', high:'alert-icon-wrap urgent', normal:'alert-icon-wrap received', low:'alert-icon-wrap received' };
+  listEl.innerHTML = data.map(a=>{
+    const timeStr = a.createdAt ? new Date(toMs(a.createdAt)).toLocaleString('en-NG',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const iconWrapClass = a.type==='sent' ? 'alert-icon-wrap sent' : (priColors[a.priority]||'alert-icon-wrap received');
+    const icon = a.type==='sent' ? 'fa-paper-plane' : (a.priority==='urgent'?'fa-bolt':'fa-inbox');
+    return `<div class="alert-item${a.read?'':' unread'}" id="alert-item-${a.id}" onclick="markAlertRead('${a.id}')">
+      <div class="${iconWrapClass}"><i class="fas ${icon}"></i></div>
+      <div class="alert-content">
+        <div class="alert-title">${a.title||'Notification'}</div>
+        <div class="alert-body">${a.body||''}</div>
+        <div class="alert-time"><i class="fas fa-clock" style="margin-right:4px;"></i>${timeStr}</div>
+      </div>
+      <div class="alert-unread-dot"></div>
+    </div>`;
+  }).join('');
+}
+
+async function markAlertRead(alertId){
+  // Mark visually immediately
+  const el = document.getElementById(`alert-item-${alertId}`);
+  if(el) el.classList.remove('unread');
+  const dot = el?.querySelector('.alert-unread-dot');
+  if(dot) dot.style.opacity='0';
+  try{
+    await db.collection('alerts').doc(alertId).update({read:true});
+  }catch(e){}
+}
+
+document.getElementById('markAllReadBtn')?.addEventListener('click', async()=>{
+  const unread = alertsData.filter(a=>!a.read);
+  if(!unread.length){ showToast('All alerts are already read'); return; }
+  const batch = db.batch();
+  unread.forEach(a=>{
+    const ref = db.collection('alerts').doc(a.id);
+    batch.update(ref, {read:true});
+  });
+  try{ await batch.commit(); showToast('All alerts marked as read'); }
+  catch(e){ showToast(e.message,true); }
+});
+
+document.querySelectorAll('#pageAlerts .mftab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('#pageAlerts .mftab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    alertsFilter = tab.dataset.afilter;
+    renderAlerts();
+  });
+});
+
+// Helper: push an alert to a user's alerts collection
+async function pushAlert(uid, type, title, body, priority='normal'){
+  try{
+    await db.collection('alerts').add({
+      recipientUid: uid, type, title, body, priority, read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){ console.warn('pushAlert error:', e.message); }
+}
+
+document.getElementById('logoutNavItem')?.addEventListener('click',()=>{auth.signOut();currentUser=null;window.location.replace('/login');});
+
+auth.onAuthStateChanged(user=>{
+  if(user){currentUser=user;initDashboard();}
+  else{window.location.replace('/login');}
+});
+</script>
+</body>
+</html>
