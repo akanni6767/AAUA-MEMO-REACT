@@ -6,17 +6,21 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.4",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
+    "postgres": "^4.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
+    "drizzle-kit": "^0.31.11",
     "vite": "^5.2.0"
   }
 }
