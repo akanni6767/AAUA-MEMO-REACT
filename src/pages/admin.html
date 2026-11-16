@@ -8,9 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect x='5' y='3' width='15' height='21' rx='2.5' stroke='%23ffffff' stroke-width='1.7' fill='none'/%3E%3Cpath d='M9 8h7M9 12h7M9 16h4' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' fill='none'/%3E%3Cpath d='M20 15v8l3-2 3 2V15' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
   <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADlSURBVFhH7ZY7DsIwEET3lBwBcQBEEQgJCYkjoPQMlJ6B0hMQOQKNA0RBiURFQUC0pGVsmd1kPJOFBCl2NM+7K8sSBEEQHiCzXbd9BPAYfAE8B18A78FXwHfwHfAGvANPgAfgyf8AeApeAs/BC+Al8Ba8A14Cb8EL4Dl4DrwDXgJvwQvge/AV8B18B7wCfgE/gR/Ad+AL4Cv4BPgCPgA+gg8F9AHwHnwAb8F7wEfgI+AN8Aa8AV6At8A74A3wGLwDHgPvgMfAO+Ax8B/4D/wCfgE/gR/Ad+ALjwXif4Bf2OfV+uYB+Ap+At+Br+AngZcVX6/ZMhZSHpawAAAAAElFTkSuQmCC">
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
     :root {
       --primary:          #0f172b;
@@ -388,9 +385,20 @@
     .mu-loading { text-align: center; padding: 3rem; color: var(--text-muted); }
 
     /* ── EDIT USER MODAL ── */
-    .edit-user-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 5000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+    .edit-user-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 5000; display: flex; align-items: flex-start; justify-content: center; padding: 12px; overflow: auto; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
     .edit-user-modal-overlay.open { opacity: 1; pointer-events: all; }
-    .edit-user-modal { background: var(--bg-card); border-radius: 28px; max-width: 520px; width: 94%; padding: 2rem; max-height: 90vh; overflow-y: auto; box-shadow: 0 32px 64px rgba(0,0,0,0.25); transform: scale(0.94); transition: transform 0.25s; }
+    .edit-user-modal { background: var(--bg-card); border-radius: 20px; width: min(520px, 100%); box-sizing: border-box; padding: 1.15rem; margin: auto; max-height: none; overflow: visible; box-shadow: 0 32px 64px rgba(0,0,0,0.25); transform: scale(0.94); transition: transform 0.25s; }
+    .edit-user-modal .form-group,
+    .edit-user-modal input,
+    .edit-user-modal select { min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box; }
+    .edit-user-modal .eum-actions { display: flex; gap: 10px; margin-top: 0.5rem; flex-wrap: wrap; }
+    .edit-user-modal .eum-actions .settings-save-btn { flex: 1 1 140px; justify-content: center; min-width: 0; }
+    @media (max-width: 640px) {
+      .edit-user-modal .form-row { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 700px) {
+      .edit-user-modal { padding: 2rem; border-radius: 28px; }
+    }
     .edit-user-modal-overlay.open .edit-user-modal { transform: scale(1); }
     .eum-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem; }
     .eum-header h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 8px; }
@@ -978,9 +986,11 @@
           <h3><i class="fas fa-circle-user"></i> Profile Avatar</h3>
           <div class="avatar-upload-row">
             <div class="avatar-upload-circle" id="settingsAvatarCircle"><i class="fas fa-user" id="settingsAvatarIcon"></i></div>
-            <div>
-              <button class="avatar-select-btn" id="openAvatarModalBtn"><i class="fas fa-grid-2"></i> Select Avatar</button>
-              <div style="font-size:0.75rem;color:var(--text-faint);margin-top:8px;">Choose from 16 available avatars</div>
+            <div class="avatar-actions" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+              <button type="button" class="avatar-select-btn" id="openAvatarModalBtn"><i class="fas fa-grid-2"></i> Select Avatar</button>
+              <button type="button" class="avatar-select-btn" id="uploadPhotoBtn"><i class="fas fa-upload"></i> Upload Picture</button>
+              <input type="file" id="profilePhotoInput" accept="image/*" hidden>
+              <div style="font-size:0.75rem;color:var(--text-faint);flex-basis:100%;">Choose an avatar or upload your own photo</div>
             </div>
           </div>
         </div>
@@ -1424,7 +1434,7 @@
       </div>
     </div>
     <div id="euError" style="color:#e63946;font-size:0.8rem;margin-bottom:8px;"></div>
-    <div style="display:flex;gap:10px;margin-top:0.5rem;">
+    <div class="eum-actions">
       <button class="settings-save-btn" style="background:var(--input-bg);color:var(--text-body);border:1.5px solid var(--input-border);flex:1;" id="cancelEditUserBtn">Cancel</button>
       <button class="settings-save-btn" style="flex:2;" id="saveEditUserBtn"><i class="fas fa-save"></i> Save Changes</button>
     </div>
@@ -1436,7 +1446,7 @@
   <div class="del-modal">
     <div class="del-modal-icon"><i class="fas fa-triangle-exclamation"></i></div>
     <h3>Delete User Account?</h3>
-    <p id="delModalMsg">This will permanently remove the user's profile and stats from Firestore.</p>
+    <p id="delModalMsg">This will permanently remove the user's profile.</p>
     <input type="hidden" id="delTargetUid">
     <div class="del-modal-actions">
       <button class="del-btn-cancel" id="cancelDelBtn">Cancel</button>
@@ -2090,7 +2100,7 @@ document.getElementById('saveEditUserBtn')?.addEventListener('click',async()=>{
 
 function openDeleteUser(uid,name){
   document.getElementById('delTargetUid').value=uid;
-  document.getElementById('delModalMsg').innerText=`This will permanently remove ${name}'s profile and stats from Firestore.`;
+  document.getElementById('delModalMsg').innerText=`This will permanently remove ${name}'s profile.`;
   document.getElementById('delModalOverlay').classList.add('open');
 }
 document.getElementById('cancelDelBtn')?.addEventListener('click',()=>document.getElementById('delModalOverlay').classList.remove('open'));
@@ -2323,6 +2333,7 @@ async function submitMemo(isDraft){
     resultEl.className=`memo-result ${type} show`;
     resultEl.querySelector('i').className=type==='success'?'fas fa-circle-check':'fas fa-circle-exclamation';
     resultMsg.innerText=msg;
+    if (window.aauaAlert) window.aauaAlert(msg, type);
     setTimeout(()=>resultEl.classList.remove('show'),7000);
   };
 
@@ -2468,6 +2479,7 @@ function showCuResult(msg,type='success'){
   const el=document.getElementById('cuResult');const txt=document.getElementById('cuResultMsg');
   el.className=`cu-result ${type} show`;txt.innerText=msg;
   el.querySelector('i').className=type==='success'?'fas fa-circle-check':'fas fa-circle-exclamation';
+  if (window.aauaAlert) window.aauaAlert(msg, type);
   setTimeout(()=>el.classList.remove('show'),6000);
 }
 
@@ -2508,16 +2520,8 @@ document.getElementById('cuSubmitBtn')?.addEventListener('click',async()=>{
 
   btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating Account...';
   try{
-    const apiKey=firebase.app().options.apiKey;
-    const authRes=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,displayName:fullName,returnSecureToken:false})});
-    const authData=await authRes.json();
-    if(authData.error){
-      const code=authData.error.message;
-      if(code==='EMAIL_EXISTS') throw new Error('This email address is already registered.');
-      if(code==='INVALID_EMAIL') throw new Error('The email address is not valid.');
-      throw new Error(authData.error.message);
-    }
-    const newUid=authData.localId;
+    const created=await auth.createUser({email,password,displayName:fullName});
+    const newUid=created.uid;
     const profileData={fullName,email,phone,dateOfBirth:dob,gender,staffId,faculty,department,office,role:role||acctType,accountType:acctType,profilePictureUrl:'',primaryColor:'#0f172b',secondaryColor:'#3b5fcf',darkMode:false,createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
     await db.collection('userProfiles').doc(newUid).set(profileData);
     await db.collection('allUsers').doc(newUid).set({uid:newUid,fullName,email,phone,faculty,department,accountType:acctType,role:role||acctType,profilePictureUrl:'',createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),active:true});
@@ -2582,6 +2586,7 @@ function populateSettingsForm(){
 let selectedAvatarSrc=null;
 const avatarModalOverlay=document.getElementById('avatarModalOverlay');
 document.getElementById('openAvatarModalBtn')?.addEventListener('click',()=>avatarModalOverlay.classList.add('open'));
+if (window.aauaBindProfilePhoto) window.aauaBindProfilePhoto();
 document.getElementById('closeAvatarModalBtn')?.addEventListener('click',()=>avatarModalOverlay.classList.remove('open'));
 avatarModalOverlay?.addEventListener('click',e=>{if(e.target===avatarModalOverlay)avatarModalOverlay.classList.remove('open');});
 
@@ -2772,6 +2777,7 @@ function adjustLogoSize(){
 function showToast(msg='Saved',isError=false){
   const toast=document.getElementById('successToast');document.getElementById('toastMsg').innerText=msg;
   toast.style.background=isError?'#e63946':'var(--primary)';toast.classList.add('show');
+  if(window.aauaAlert) window.aauaAlert(msg,isError?'error':'success');
   setTimeout(()=>toast.classList.remove('show'),3200);
 }
 

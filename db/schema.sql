@@ -2,8 +2,7 @@
 --
 -- Extracted from the collections this app reads and writes.
 -- Document ids are kept as text so existing Firebase ids can be imported.
--- Firebase Authentication (email and password) is not in Firestore.
--- Those accounts have to be recreated or linked; this file does not hold passwords.
+-- Passwords live in users.password_hash (scrypt). Sessions live in sessions.
 --
 -- Firestore path                          Postgres
 -- userProfiles/{uid}                      users
@@ -33,7 +32,7 @@ create table users (
   office text not null default '',
   role text not null default '',
   account_type text not null default 'staff'
-    check (account_type in ('staff', 'hod', 'dean', 'vc')),
+    check (account_type in ('staff', 'hod', 'dean', 'vc', 'admin')),
   profile_picture_url text not null default '',
   primary_color text not null default '#0f172b',
   secondary_color text not null default '#3b5fcf',
@@ -43,6 +42,7 @@ create table users (
   notify_announcements boolean not null default true,
   notify_email boolean not null default true,
   active boolean not null default true,
+  password_hash text not null default '',
   created_by text references users (id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -66,7 +66,7 @@ create table memos (
     check (recipient_mode in ('all', 'faculty', 'department', 'type', 'manual')),
   confidential boolean not null default false,
   status text not null default 'draft'
-    check (status in ('draft', 'pending_approval', 'sent')),
+    check (status in ('draft', 'pending_approval', 'sent', 'rejected')),
   approval_status text not null default 'none',
   sender_id text not null references users (id),
   sender_name text not null default '',
@@ -170,6 +170,12 @@ create table approval_queue (
   read boolean not null default false,
   created_at timestamptz not null default now(),
   primary key (reviewer_id, memo_id)
+);
+
+create table sessions (
+  token text primary key,
+  user_id text not null references users (id) on delete cascade,
+  created_at timestamptz not null default now()
 );
 
 create table memo_ref_counters (

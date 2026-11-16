@@ -35,11 +35,12 @@ export const users = pgTable('users', {
   notifyAnnouncements: boolean('notify_announcements').notNull().default(true),
   notifyEmail: boolean('notify_email').notNull().default(true),
   active: boolean('active').notNull().default(true),
+  passwordHash: text('password_hash').notNull().default(''),
   createdBy: text('created_by').references(() => users.id),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, table => [
-  check('users_account_type_check', sql`${table.accountType} in ('staff', 'hod', 'dean', 'vc')`),
+  check('users_account_type_check', sql`${table.accountType} in ('staff', 'hod', 'dean', 'vc', 'admin')`),
   index('users_account_type_idx').on(table.accountType),
   index('users_faculty_idx').on(table.faculty),
   index('users_department_idx').on(table.department),
@@ -78,7 +79,7 @@ export const memos = pgTable('memos', {
 }, table => [
   check('memos_priority_check', sql`${table.priority} in ('low', 'normal', 'high', 'urgent')`),
   check('memos_recipient_mode_check', sql`${table.recipientMode} in ('all', 'faculty', 'department', 'type', 'manual')`),
-  check('memos_status_check', sql`${table.status} in ('draft', 'pending_approval', 'sent')`),
+  check('memos_status_check', sql`${table.status} in ('draft', 'pending_approval', 'sent', 'rejected')`),
   index('memos_sender_idx').on(table.senderId, table.createdAt),
   index('memos_status_idx').on(table.status),
 ])
@@ -169,6 +170,12 @@ export const approvalQueue = pgTable('approval_queue', {
   primaryKey({ columns: [table.reviewerId, table.memoId] }),
   check('approval_queue_stage_check', sql`${table.stage} in ('hod', 'dean')`),
 ])
+
+export const sessions = pgTable('sessions', {
+  token: text('token').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
 
 export const memoRefCounters = pgTable('memo_ref_counters', {
   year: integer('year').primaryKey(),

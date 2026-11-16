@@ -110,6 +110,17 @@
       margin: 0 auto;
     }
 
+    .school-logo {
+      width: 112px;
+      height: 112px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 28px;
+      padding: 8px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+
     .brand-title {
       font-family: 'Playfair Display', serif;
       font-size: 58px;
@@ -215,15 +226,22 @@
       margin-bottom: 16px;
     }
     .wordmark-icon {
-      width: 52px;
-      height: 52px;
-      background: var(--dark-navy);
-      border-radius: 18px;
+      width: 72px;
+      height: 72px;
+      background: #fff;
+      border-radius: 20px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 12px;
-      box-shadow: 0 6px 14px rgba(15,23,43,0.2);
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 6px 14px rgba(15,23,43,0.12);
+    }
+    .wordmark-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
     .wordmark-name {
       font-family: 'Playfair Display', serif;
@@ -439,6 +457,7 @@
   <!-- LEFT SIDE: Branding Panel -->
   <div class="brand-panel">
     <div class="brand-content">
+      <img class="school-logo" src="/school-logo.jpg" alt="Adekunle Ajasin University">
       <div class="brand-title">AAUA MEMO</div>
       <div class="brand-image">
         <img src="login-img.png" alt="AAUA Campus" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%231e2a47\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' fill=\'%23c9a03d\' font-size=\'22\' font-family=\'monospace\' dy=\'.3em\'%3EAAUA%20Gateway%3C/text%3E%3C/svg%3E';">
@@ -453,11 +472,7 @@
     <div class="card">
       <div class="wordmark">
         <div class="wordmark-icon">
-          <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
-            <rect x="5" y="3" width="15" height="21" rx="2.5" stroke="#fff" stroke-width="1.7"/>
-            <path d="M9 8h7M9 12h7M9 16h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M20 15v8l3-2 3 2V15" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <img src="/school-logo.jpg" alt="Adekunle Ajasin University">
         </div>
         <div class="wordmark-name">AAUA MEMO</div>
         <div class="wordmark-sub">Adekunle Ajasin University</div>
@@ -585,23 +600,10 @@
     return ok;
   }
 
-  async function fetchUserAccountType(uid) {
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-    const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const profileRef = doc(db, 'userProfiles', uid);
-    const profileSnap = await getDoc(profileRef);
-    if (profileSnap.exists() && profileSnap.data().accountType) return profileSnap.data().accountType;
-    const allRef = doc(db, 'allUsers', uid);
-    const allSnap = await getDoc(allRef);
-    if (allSnap.exists() && allSnap.data().accountType) return allSnap.data().accountType;
-    return null;
-  }
-
-  function getRedirectPath(accountType) {
-    if (!accountType) return '/Admin';
-    const type = accountType.toLowerCase();
+  function getRedirectPath(accountType, role) {
+    const type = (accountType || '').toLowerCase();
+    const roleName = (role || '').toLowerCase();
+    if (type === 'admin' || roleName.includes('admin')) return '/Admin';
     if (type === 'staff') return '/staff';
     if (type === 'vc') return '/vice-chancellor';
     if (type === 'hod') return '/head-of-department';
@@ -618,13 +620,10 @@
     const email = emailField.value.trim();
     const pwd = passField.value;
     try {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-      const { getAuth, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const cred = await signInWithEmailAndPassword(auth, email, pwd);
-      const role = await fetchUserAccountType(cred.user.uid);
-      const redirectUrl = getRedirectPath(role);
+      const cred = await firebase.auth().signInWithEmailAndPassword(email, pwd);
+      const snap = await firebase.firestore().collection('userProfiles').doc(cred.user.uid).get();
+      const profile = snap.exists ? snap.data() : {};
+      const redirectUrl = getRedirectPath(profile.accountType || cred.user.accountType, profile.role || cred.user.role);
       if (document.getElementById('remember').checked) localStorage.setItem('aaua_memo_email', email);
       else localStorage.removeItem('aaua_memo_email');
       window.location.href = redirectUrl;
@@ -660,12 +659,7 @@
       return;
     }
     try {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-      const { getAuth, sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      await sendPasswordResetEmail(auth, emailVal);
-      globalMsgSpan.innerText = '✅ Password reset email sent! Check your inbox.';
+      globalMsgSpan.innerText = 'Password reset by email is not available. Ask an administrator to set a new password.';
       globalErrorDiv.classList.add('show');
       setTimeout(() => globalErrorDiv.classList.remove('show'), 5000);
     } catch (err) {

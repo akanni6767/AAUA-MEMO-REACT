@@ -73,8 +73,6 @@ export default function HtmlPage({ html, title }) {
         window.__reactLocationPatched = true;
         function reactNav(url) {
           var path = url;
-          console.log(path)
-          alert(path)
           try { if(url.startsWith('http')) path = new URL(url).pathname; } catch(e) {}
           window.__reactNavigate && window.__reactNavigate(path);
         }

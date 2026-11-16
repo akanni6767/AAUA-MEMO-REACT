@@ -6,9 +6,6 @@
   <title>AAUA MEMO — Head of Department Portal</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
     :root{--primary:#0f172b;--secondary:#3b5fcf;--bg-body:#f5f9ff;--bg-main:#f8fafd;--bg-card:#ffffff;--bg-sidebar:#ffffff;--bg-navbar:#ffffff;--border:#eef2f8;--border-card:#ecf3fa;--text-heading:#0f172b;--text-body:#334155;--text-muted:#64748b;--text-faint:#94a3b8;--nav-active-bg:#f0f4fe;--nav-hover-bg:#f0f4fe;--nav-sub-hover:#f0f4fe;--input-bg:#f9fafc;--input-border:#e2e8f0;--shadow-sidebar:2px 0 24px rgba(0,0,0,0.04);--shadow-avatar:0 4px 10px rgba(0,0,0,0.08);}
     body.dark{--bg-body:#151517;--bg-main:#151517;--bg-card:#1e1e21;--bg-sidebar:#1a1a1d;--bg-navbar:#1a1a1d;--border:#2a2a2e;--border-card:#2a2a2e;--text-heading:#f1f5f9;--text-body:#cbd5e1;--text-muted:#94a3b8;--text-faint:#64748b;--nav-active-bg:rgba(255,255,255,0.07);--nav-hover-bg:rgba(255,255,255,0.05);--nav-sub-hover:rgba(255,255,255,0.06);--input-bg:#25252a;--input-border:#38383e;--shadow-sidebar:2px 0 24px rgba(0,0,0,0.3);--shadow-avatar:0 4px 10px rgba(0,0,0,0.3);}
@@ -653,7 +650,7 @@
           <h3><i class="fas fa-circle-user"></i> Profile Avatar</h3>
           <div class="avatar-upload-row">
             <div class="avatar-upload-circle" id="settingsAvatarCircle"><i class="fas fa-user" id="settingsAvatarIcon"></i></div>
-            <div><button class="avatar-select-btn" id="openAvatarModalBtn"><i class="fas fa-grid-2"></i> Select Avatar</button><div style="font-size:.75rem;color:var(--text-faint);margin-top:8px;">Choose from 16 available avatars</div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;"><button type="button" class="avatar-select-btn" id="openAvatarModalBtn"><i class="fas fa-grid-2"></i> Select Avatar</button><button type="button" class="avatar-select-btn" id="uploadPhotoBtn"><i class="fas fa-upload"></i> Upload Picture</button><input type="file" id="profilePhotoInput" accept="image/*" hidden><div style="font-size:.75rem;color:var(--text-faint);flex-basis:100%;">Choose an avatar or upload your own photo</div></div>
           </div>
         </div>
         <div class="settings-card">
@@ -935,7 +932,7 @@ document.getElementById('navOutbox')?.addEventListener('click',()=>{showPage('pa
 /* ── HELPERS ── */
 function toMs(ts){if(!ts)return 0;if(ts.seconds)return ts.seconds*1000;if(ts instanceof Date)return ts.getTime();return 0;}
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function showToast(msg='Saved',isError=false){const t=document.getElementById('successToast');document.getElementById('toastMsg').innerText=msg;t.style.background=isError?'#e63946':'var(--primary)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+function showToast(msg='Saved',isError=false){const t=document.getElementById('successToast');document.getElementById('toastMsg').innerText=msg;t.style.background=isError?'#e63946':'var(--primary)';t.classList.add('show');if(window.aauaAlert)window.aauaAlert(msg,isError?'error':'success');setTimeout(()=>t.classList.remove('show'),3200);}
 
 /* ── VIEW DEPARTMENT (HOD) ── */
 async function loadDeptUsers(){
@@ -1241,7 +1238,7 @@ async function submitMemo(isDraft){
   const cat=document.getElementById('memoCategory').value,pri=document.getElementById('memoPriority').value;
   const mode=document.querySelector('.rtab.active')?.dataset.rmode||'all';const conf=document.getElementById('memoConfidential').checked;
   const rEl=document.getElementById('memoResult'),rMsg=document.getElementById('memoResultMsg');
-  const showR=(msg,type)=>{rEl.className=`memo-result ${type} show`;rEl.querySelector('i').className=type==='success'?'fas fa-circle-check':'fas fa-circle-exclamation';rMsg.innerText=msg;setTimeout(()=>rEl.classList.remove('show'),7000);};
+  const showR=(msg,type)=>{rEl.className=`memo-result ${type} show`;rEl.querySelector('i').className=type==='success'?'fas fa-circle-check':'fas fa-circle-exclamation';rMsg.innerText=msg;if(window.aauaAlert)window.aauaAlert(msg,type);setTimeout(()=>rEl.classList.remove('show'),7000);};
   if(!subj){showR('Memo subject is required.','error');return;}if(!isDraft&&!body){showR('Memo body cannot be empty.','error');return;}
   const btn=isDraft?document.getElementById('memoDraftBtn'):document.getElementById('memoSendBtn');
   btn.disabled=true;btn.innerHTML=isDraft?'<i class="fas fa-spinner fa-spin"></i> Saving…':'<i class="fas fa-spinner fa-spin"></i> Sending…';
@@ -1295,6 +1292,7 @@ function populateSettingsForm(){
 let selectedAvatarSrc=null;
 const aModal=document.getElementById('avatarModalOverlay');
 document.getElementById('openAvatarModalBtn')?.addEventListener('click',()=>aModal.classList.add('open'));
+if (window.aauaBindProfilePhoto) window.aauaBindProfilePhoto();
 document.getElementById('closeAvatarModalBtn')?.addEventListener('click',()=>aModal.classList.remove('open'));
 aModal?.addEventListener('click',e=>{if(e.target===aModal)aModal.classList.remove('open');});
 document.querySelectorAll('.avatar-option').forEach(opt=>{opt.addEventListener('click',()=>{document.querySelectorAll('.avatar-option').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');selectedAvatarSrc=opt.dataset.src;const c=document.getElementById('settingsAvatarCircle');document.getElementById('settingsAvatarIcon').style.display='none';let img=c.querySelector('img');if(!img){img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';c.appendChild(img);}img.src=selectedAvatarSrc;setTimeout(()=>aModal.classList.remove('open'),300);});});
