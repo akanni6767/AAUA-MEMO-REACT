@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memo</title>
+  <style>
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #eef1f6;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+  }
+
+  .pdf-page {
+    width: 210mm;
+    max-width: 210mm;
+    min-height: 297mm;
+    padding: 15mm 20mm;
+    box-sizing: border-box;
+    position: relative;
+    background-color: #ffffff;
+    color: #0f172a;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 16px;
+    line-height: 1.45;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  .pdf-page * {
+    font-family: inherit;
+  }
+
+  .pdf-page header {
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .school-hero h1 {
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: 0.4px;
+    font-weight: 700;
+  }
+
+  .school-hero h3 {
+    margin: 6px 0 0;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .logo {
+    display: flex;
+    justify-content: center;
+    margin-top: 18px;
+  }
+
+  .logo img {
+    width: 72px;
+    height: auto;
+  }
+
+  .memo-kicker {
+    margin: 18px 0 14px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    font-style: italic;
+    text-decoration: underline;
+  }
+
+  .memo-meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+
+  .memo-meta td {
+    width: 50%;
+    height: 44px;
+    border: 2px solid #4b5563;
+    padding: 6px 10px;
+    vertical-align: middle;
+  }
+
+  .memo-meta label {
+    font-weight: 700;
+  }
+
+  .memo-confidential {
+    display: none;
+    margin: 0 0 12px;
+    text-align: left;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+
+  .memo-confidential.is-visible {
+    display: block;
+  }
+
+  #memo-title {
+    display: block;
+    font-weight: 700;
+    font-size: 18px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  #memo-body,
+  .memo-paragraph {
+    margin: 0;
+    text-align: left;
+  }
+
+  .dist-label {
+    display: block;
+    margin: 28px 0 8px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-align: left;
+  }
+
+  .dist-item {
+    display: block;
+    margin: 1px 0 0;
+    text-align: left;
+  }
+  </style>
+</head>
+
+<body>
+  <!-- Memo Template. Text nodes with ids are filled by src/memoDialog.js. -->
+  <div class="pdf-page">
+    <header>
+      <div class="school-hero">
+        <h1>ADEKUNLE AJASIN UNIVERSITY</h1>
+        <h3>AKUNGBA-AKOKO<br><span id="faculty-name">FACULTY OF EDUCATION</span></h3>
+      </div>
+      <div class="logo">
+        <img src="/school-logo.jpg" alt="Adekunle Ajasin University">
+      </div>
+    </header>
+    <h3 class="memo-kicker">INTERNAL MEMORANDUM</h3>
+    <table class="memo-meta">
+      <tr>
+        <td><label>From: </label><span id="memo-from">Sub-Dean, (Education)</span></td>
+        <td><label>To: </label><span id="memo-to1">See Distribution</span></td>
+      </tr>
+      <tr>
+        <td><label>Ref: </label><span id="memo-ref">AAUA/EDU/EM/26/013</span></td>
+        <td><label>Date: </label><span id="memo-date">14<sup>th</sup> Oct, 2026</span></td>
+      </tr>
+    </table>
+    <section class="memo-body">
+      <p id="memo-confidential" class="memo-confidential">CONFIDENTIAL</p>
+      <span id="memo-title">FINAL DRAFT OF THE SECOND SEMESTER EXAMINATION TIMETABLE FOR THE 2025/2026 ACADEMIC SESSION</span>
+      <p id="memo-body">Please, find attached the FINAL version of the 2025/2026 Second Semester Examination Timetable for the Faculty of Education.</p>
+    </section>
+    <section id="memo-distribution">
+      <span class="dist-label">Distribution</span>
+      <ul id="memo-distribution-list">
+        <li>—</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

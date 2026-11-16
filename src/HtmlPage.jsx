@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+
 // Patch window.location.href and window.location.replace so Firebase redirects
 // work with React Router instead of hard reloading the page.
 function patchLocationForReact(navigate) {
@@ -35,10 +36,10 @@ export default function HtmlPage({ html, title }) {
 
   useEffect(() => {
     if (title) document.title = title
-
+    
     const el = containerRef.current
     if (!el) return
-
+    
     // --- 1. Extract <style> blocks from the HTML string ---
     const styleMatches = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)]
     // Inject styles into <head> with a unique marker so we can remove on unmount
@@ -48,7 +49,7 @@ export default function HtmlPage({ html, title }) {
       tag.textContent = m[1]
       document.head.appendChild(tag)
       return tag
-    })
+    });
 
     // --- 2. Extract <body> content (between <body> and </body>) ---
     const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
@@ -72,6 +73,8 @@ export default function HtmlPage({ html, title }) {
         window.__reactLocationPatched = true;
         function reactNav(url) {
           var path = url;
+          console.log(path)
+          alert(path)
           try { if(url.startsWith('http')) path = new URL(url).pathname; } catch(e) {}
           window.__reactNavigate && window.__reactNavigate(path);
         }
@@ -88,8 +91,11 @@ export default function HtmlPage({ html, title }) {
     // Store navigate on window so the patch can call it
     window.__reactNavigate = (path) => navigate(path, { replace: false })
 
-    // --- 4. Extract and re-execute all <script> blocks ---
-    const scriptMatches = [...bodyHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    // --- 4. Re-execute <script> blocks from <head> and <body> ---
+    // Head scripts (e.g. Tailwind CDN in preview.html) were previously ignored.
+    // Skip src scripts already on the page so Admin's Firebase tags are not
+    // injected a second time (index.html already loads them).
+    const scriptMatches = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
     const injectedScripts = []
 
     scriptMatches.forEach(match => {
@@ -97,7 +103,6 @@ export default function HtmlPage({ html, title }) {
       const content = match[2] || ''
 
       const tag = document.createElement('script')
-      // Copy attributes (type, src, etc.)
       const attrRe = /(\w[\w-]*)(?:=(?:"([^"]*)"|'([^']*)'|(\S+)))?/g
       let attrMatch
       while ((attrMatch = attrRe.exec(attrs)) !== null) {
@@ -105,6 +110,20 @@ export default function HtmlPage({ html, title }) {
         const val = attrMatch[2] || attrMatch[3] || attrMatch[4] || ''
         if (name && name !== 'type') tag.setAttribute(name, val)
       }
+
+      const src = tag.getAttribute('src')
+      if (src) {
+        const already = [...document.querySelectorAll('script[src]')].some(s => {
+          try { return s.src === tag.src || s.getAttribute('src') === src } catch (_) { return false }
+        })
+        if (already) return
+        tag.async = false
+        tag.setAttribute('data-htmlpage', '1')
+        document.head.appendChild(tag)
+        injectedScripts.push(tag)
+        return
+      }
+
       // Don't mark as module — Firebase compat uses global firebase.*
       // Rewrite window.location.href = '...' → window.__reactNavigate('...')
       // Top-level let/const become global lexical bindings. Removing the <script>
@@ -132,10 +151,16 @@ export default function HtmlPage({ html, title }) {
     })
 
     return () => {
-      // Cleanup styles and scripts on route change
       injectedStyles.forEach(t => t.remove())
       injectedScripts.forEach(t => t.remove())
       patchScript.remove()
+      // Tailwind CDN injects its own <style> tags (Preflight + utilities).
+      // Remove them on leave so login/admin CSS is not affected.
+      document.querySelectorAll('style').forEach(s => {
+        const css = s.textContent || ''
+        if (css.includes('--tw-') || css.includes('tailwindcss')) s.remove()
+      })
+      try { delete window.tailwind } catch (_) { window.tailwind = undefined }
       el.innerHTML = ''
     }
   }, [html, title])

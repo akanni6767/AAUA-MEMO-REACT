@@ -1081,7 +1081,7 @@ function renderInboxList(memos){
             ${m.confidential?`<span class="priority-badge urgent"><i class="fas fa-lock"></i>Confidential</span>`:''}
           </div>
           <div class="memo-card-subject">${m.subject||'(No Subject)'}</div>
-          <div class="memo-card-preview">${unread?'<i class="fas fa-lock" style="font-size:.7rem;margin-right:4px;"></i>Click to open…':'Click to expand…'}</div>
+          <div class="memo-card-preview">${unread?'<i class="fas fa-lock" style="font-size:.7rem;margin-right:4px;"></i>Click to open…':'Click to view…'}</div>
         </div>
         <span class="memo-card-date">${date}</span>
         <i class="fas fa-chevron-down expand-chevron"></i>
@@ -1095,40 +1095,7 @@ function renderInboxList(memos){
   }).join('');
 }
 async function toggleInboxMemo(memoId,inboxDocId){
-  const card=document.getElementById(`inbox-card-${memoId}`);if(!card)return;
-  const was=card.classList.contains('expanded');
-  document.querySelectorAll('.memo-card.expanded').forEach(c=>c.classList.remove('expanded'));
-  if(was)return;card.classList.add('expanded');
-  if(card.classList.contains('unread')){
-    card.classList.remove('unread');
-    try{await db.collection('userInbox').doc(currentUser.uid).collection('memos').doc(inboxDocId).update({read:true,readAt:firebase.firestore.FieldValue.serverTimestamp()});}catch(e){}
-    try{
-      const ps=await db.collection('userProfiles').doc(currentUser.uid).get();
-      const pd=ps.exists?ps.data():{};
-      const vd=`${memoId}_${currentUser.uid}`;
-      const ev=await db.collection('memoViews').doc(vd).get();
-      if(!ev.exists){
-        await db.collection('memoViews').doc(vd).set({memoId,uid:currentUser.uid,name:pd.fullName||currentUser.email,email:pd.email||currentUser.email,viewedAt:firebase.firestore.FieldValue.serverTimestamp()});
-        await db.collection('memoAnalytics').doc(memoId).set({memoId,viewCount:firebase.firestore.FieldValue.increment(1),lastViewed:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-      }
-    }catch(e){}
-  }
-  const bodyEl=document.getElementById(`body-${memoId}`);
-  try{
-    const snap=await db.collection('memos').doc(memoId).get();
-    if(!snap.exists){bodyEl.innerHTML='<p style="color:var(--text-muted);">Memo not found.</p>';return;}
-    const md=snap.data();
-    bodyEl.innerHTML=`${md.confidential?`<div class="confidential-banner"><i class="fas fa-lock"></i> Marked <strong>Confidential</strong></div>`:''}
-      <div class="memo-meta-row">
-        <span><i class="fas fa-hashtag"></i>${md.refNumber||'—'}</span>
-        <span><i class="fas fa-calendar"></i>${md.date||'—'}</span>
-        <span><i class="fas fa-tag"></i>${(md.category||'General').charAt(0).toUpperCase()+(md.category||'General').slice(1)}</span>
-        <span><i class="fas fa-users"></i>${md.recipientCount||1} recipient(s)</span>
-        <span><i class="fas fa-user-pen"></i>From: ${md.senderName||'Admin'}</span>
-      </div>
-      <div class="memo-body-text">${escapeHtml(md.body||'(No content)')}</div>
-      <div class="memo-card-actions-bar"><button class="mca-btn" onclick="markUnread('${inboxDocId}')"><i class="fas fa-envelope"></i> Mark Unread</button></div>`;
-  }catch(e){bodyEl.innerHTML=`<p style="color:#e63946;">Failed: ${e.message}</p>`;}
+  if(window.MemoDialog) return window.MemoDialog.openInbox(memoId, inboxDocId);
 }
 async function markUnread(id){try{await db.collection('userInbox').doc(currentUser.uid).collection('memos').doc(id).update({read:false});showToast('Marked as unread');}catch(e){showToast(e.message,true);}}
 document.querySelectorAll('#pageInbox .mftab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('#pageInbox .mftab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');inboxFilter=tab.dataset.filter;filterInbox();});});
@@ -1193,7 +1160,7 @@ function renderOutboxList(memos){
     </div>`;
   }).join('');
 }
-function toggleOutboxMemo(id){const c=document.getElementById(`outbox-card-${id}`);if(!c)return;const was=c.classList.contains('expanded');document.querySelectorAll('.memo-card.expanded').forEach(x=>x.classList.remove('expanded'));if(!was)c.classList.add('expanded');}
+function toggleOutboxMemo(id){var memo=(typeof outboxData!=='undefined'?outboxData:[]).find(function(m){return m.id===id;});if(memo&&window.MemoDialog) window.MemoDialog.open(memo);}
 async function sendDraftMemo(id){try{await db.collection('memos').doc(id).update({status:'sent',sentAt:firebase.firestore.FieldValue.serverTimestamp()});showToast('Draft sent successfully');}catch(e){showToast(e.message,true);}}
 document.querySelectorAll('#pageOutbox .mftab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('#pageOutbox .mftab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');outboxFilter=tab.dataset.filter;filterOutbox();});});
 
@@ -1385,7 +1352,7 @@ async function submitMemo(isDraft){
   let recipients=[];
   if(!isDraft){recipients=await collectRecipients(mode);if(recipients===null){showR('Please complete the recipient selection.','error');btn.disabled=false;btn.innerHTML=isDraft?'<i class="fas fa-floppy-disk"></i> Save as Draft':'<i class="fas fa-paper-plane"></i> Send Memo';return;}}
   try{
-    const mDoc={subject:subj,body,refNumber:ref,date,category:cat,priority:pri,recipientMode:mode,recipientUids:recipients,recipientCount:recipients.length,confidential:conf,status:isDraft?'draft':'sent',senderUid:currentUser.uid,senderName:currentUser.displayName||currentUser.email,createdAt:firebase.firestore.FieldValue.serverTimestamp(),sentAt:isDraft?null:firebase.firestore.FieldValue.serverTimestamp()};
+    const mDoc={subject:subj,body,refNumber:ref,date,category:cat,priority:pri,recipientMode:mode,recipientUids:recipients,recipientCount:recipients.length,distribution:(window.MemoDialog?await window.MemoDialog.distributionFor(recipients):[]),confidential:conf,status:isDraft?'draft':'sent',senderUid:currentUser.uid,senderName:currentUser.displayName||currentUser.email,createdAt:firebase.firestore.FieldValue.serverTimestamp(),sentAt:isDraft?null:firebase.firestore.FieldValue.serverTimestamp()};
     const ref2=await db.collection('memos').add(mDoc);
     if(!isDraft&&recipients.length){
       for(let i=0;i<recipients.length;i+=400){

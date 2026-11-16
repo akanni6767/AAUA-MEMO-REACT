@@ -1690,7 +1690,7 @@ function renderInboxList(memos){
             ${m.confidential?`<span class="priority-badge urgent"><i class="fas fa-lock"></i>Confidential</span>`:''}
           </div>
           <div class="memo-card-subject">${m.subject||'(No Subject)'}</div>
-          <div class="memo-card-preview" id="preview-${m.memoId||m.id}">${isUnread?'<i class="fas fa-lock" style="font-size:0.7rem;margin-right:4px;"></i>Click to open and read this memo…':'Click to expand memo details…'}</div>
+          <div class="memo-card-preview" id="preview-${m.memoId||m.id}">${isUnread?'<i class="fas fa-lock" style="font-size:0.7rem;margin-right:4px;"></i>Click to open and read this memo…':'Click to view this memo…'}</div>
         </div>
         <span class="memo-card-date">${dateStr}</span>
         <i class="fas fa-chevron-down expand-chevron"></i>
@@ -1705,67 +1705,7 @@ function renderInboxList(memos){
 }
 
 async function toggleInboxMemo(memoId, inboxDocId){
-  const card=document.getElementById(`inbox-card-${memoId}`);
-  if(!card) return;
-  const isExpanded=card.classList.contains('expanded');
-  document.querySelectorAll('.memo-card.expanded').forEach(c=>c.classList.remove('expanded'));
-  if(isExpanded) return;
-  card.classList.add('expanded');
-
-  const wasUnread=card.classList.contains('unread');
-  if(wasUnread){
-    card.classList.remove('unread');
-    try{
-      await db.collection('userInbox').doc(currentUser.uid).collection('memos').doc(inboxDocId).update({read:true,readAt:firebase.firestore.FieldValue.serverTimestamp()});
-    }catch(e){}
-  }
-
-  // Record view on the memo doc itself (writer=reader, so no permission issues).
-  // viewCount and viewers map live on the memos/{memoId} doc.
-  try{
-    const profileSnap = await db.collection('userProfiles').doc(currentUser.uid).get();
-    const profileData = profileSnap.exists ? profileSnap.data() : {};
-    const viewerName  = profileData.fullName || currentUser.displayName || currentUser.email;
-    const viewerEmail = profileData.email || currentUser.email;
-    // Use flat memoViews collection — doc ID = memoId_uid (avoids subcollection permission issues)
-    const viewDocId = `${memoId}_${currentUser.uid}`;
-    const existingView = await db.collection('memoViews').doc(viewDocId).get();
-    if(!existingView.exists){
-      await db.collection('memoViews').doc(viewDocId).set({
-        memoId, uid: currentUser.uid, name: viewerName,
-        email: viewerEmail, viewedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      // Update analytics summary doc owned by sender
-      await db.collection('memoAnalytics').doc(memoId).set({
-        memoId, viewCount: firebase.firestore.FieldValue.increment(1),
-        lastViewed: firebase.firestore.FieldValue.serverTimestamp()
-      }, {merge: true});
-    }
-  }catch(e){ console.warn('Analytics write error:', e.message); }
-
-  const bodyEl=document.getElementById(`body-${memoId}`);
-  try{
-    const snap=await db.collection('memos').doc(memoId).get();
-    if(!snap.exists){ bodyEl.innerHTML='<p style="color:var(--text-muted);font-size:0.85rem;">Memo content not found.</p>'; return; }
-    const md=snap.data();
-    const dateStr=md.date||'—';
-    const catCap=(md.category||'General').charAt(0).toUpperCase()+(md.category||'General').slice(1);
-    bodyEl.innerHTML=`
-      ${md.confidential?`<div class="confidential-banner"><i class="fas fa-lock"></i> This memo is marked <strong>Confidential</strong> — do not forward.</div>`:''}
-      <div class="memo-meta-row">
-        <span><i class="fas fa-hashtag"></i>${md.refNumber||'—'}</span>
-        <span><i class="fas fa-calendar"></i>${dateStr}</span>
-        <span><i class="fas fa-tag"></i>${catCap}</span>
-        <span><i class="fas fa-users"></i>${md.recipientCount||1} recipient(s)</span>
-        <span><i class="fas fa-user-pen"></i>From: ${md.senderName||'Admin'}</span>
-      </div>
-      <div class="memo-body-text">${escapeHtml(md.body||'(No content)')}</div>
-      <div class="memo-card-actions-bar">
-        <button class="mca-btn" onclick="markUnread('${inboxDocId}')"><i class="fas fa-envelope"></i> Mark Unread</button>
-      </div>`;
-  }catch(e){
-    bodyEl.innerHTML=`<p style="color:#e63946;font-size:0.85rem;">Failed to load memo: ${e.message}</p>`;
-  }
+  if(window.MemoDialog) return window.MemoDialog.openInbox(memoId, inboxDocId);
 }
 
 async function markUnread(inboxDocId){
@@ -1877,11 +1817,8 @@ function renderOutboxList(memos){
 }
 
 function toggleOutboxMemo(id){
-  const card=document.getElementById(`outbox-card-${id}`);
-  if(!card) return;
-  const was=card.classList.contains('expanded');
-  document.querySelectorAll('.memo-card.expanded').forEach(c=>c.classList.remove('expanded'));
-  if(!was) card.classList.add('expanded');
+  var memo=(typeof outboxData!=='undefined'?outboxData:[]).find(function(m){return m.id===id;});
+  if(memo&&window.MemoDialog) window.MemoDialog.open(memo);
 }
 
 async function sendDraftMemo(memoId){
@@ -2408,7 +2345,7 @@ async function submitMemo(isDraft){
   try{
     const memoDoc={
       subject,body,refNumber:ref,date,category,priority,
-      recipientMode:mode,recipientUids:recipients,recipientCount:recipients.length,
+      recipientMode:mode,recipientUids:recipients,recipientCount:recipients.length,distribution:(window.MemoDialog?await window.MemoDialog.distributionFor(recipients):[]),
       confidential,
       status:isDraft?'draft':'sent',
       senderUid:currentUser.uid,
