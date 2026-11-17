@@ -1448,13 +1448,19 @@ async function deanApprove(memoId,queueDocId,senderUid,subject,senderName,priori
     const memoData=memoSnap.data();
     const recipientUids=memoData.recipientUids||[];
     const mode=memoData.recipientMode||'all';
-    let finalRecipients=recipientUids;
-
-    // If mode is 'all', fetch all users fresh
-    if(mode==='all'){
-      const allSnap=await db.collection('allUsers').get();
-      finalRecipients=[];
-      allSnap.forEach(d=>finalRecipients.push(d.id));
+    const allSnap=await db.collection('allUsers').get();
+    const people=[];
+    allSnap.forEach(d=>people.push({uid:d.id,...d.data()}));
+    const byId={};
+    people.forEach(u=>{byId[u.uid]=u;});
+    let finalRecipients=mode==='all'?people.map(u=>u.uid):recipientUids.slice();
+    const senderType=(byId[memoData.senderUid||senderUid]?.accountType||'').toLowerCase();
+    if(senderType==='staff'){
+      finalRecipients=finalRecipients.filter(uid=>{
+        if(uid===(memoData.senderUid||senderUid)) return false;
+        const type=(byId[uid]?.accountType||'').toLowerCase();
+        return type!=='hod'&&type!=='dean'&&type!=='vc';
+      });
     }
 
     // Mark memo as approved and sent
@@ -1466,7 +1472,8 @@ async function deanApprove(memoId,queueDocId,senderUid,subject,senderName,priori
       deanApprovedAt:firebase.firestore.FieldValue.serverTimestamp(),
       sentAt:firebase.firestore.FieldValue.serverTimestamp(),
       recipientUids:finalRecipients,
-      recipientCount:finalRecipients.length
+      recipientCount:finalRecipients.length,
+      distribution:(window.MemoDialog?await window.MemoDialog.distributionFor(finalRecipients):(memoData.distribution||[]))
     });
 
     // Deliver to all recipient inboxes in batches of 400

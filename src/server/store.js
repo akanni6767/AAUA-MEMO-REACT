@@ -476,9 +476,68 @@ async function getDoc(tx, path) {
   throw new Error(`Unknown document ${path.join('/')}`)
 }
 
+async function assertRolePlacement(tx, id, accountType, faculty, department) {
+  const type = String(accountType || 'staff').toLowerCase()
+  if (type === 'vc') {
+    const [other] = await tx`select full_name from users where account_type = 'vc' and id <> ${id} limit 1`
+    if (other) {
+      const error = new Error('The university already has a Vice Chancellor. Only one VC is allowed.')
+      error.status = 400
+      throw error
+    }
+    return
+  }
+  if (type === 'dean') {
+    if (!faculty) {
+      const error = new Error('A Dean must belong to a faculty.')
+      error.status = 400
+      throw error
+    }
+    const [other] = await tx`
+      select full_name from users
+      where account_type = 'dean' and lower(faculty) = lower(${faculty}) and id <> ${id}
+      limit 1
+    `
+    if (other) {
+      const error = new Error(`This faculty already has a Dean (${other.full_name || 'another user'}). Only one Dean is allowed in each faculty.`)
+      error.status = 400
+      throw error
+    }
+    return
+  }
+  if (type === 'hod') {
+    if (!faculty || !department) {
+      const error = new Error('A Head of Department must belong to a faculty and a department.')
+      error.status = 400
+      throw error
+    }
+    const [other] = await tx`
+      select full_name from users
+      where account_type = 'hod'
+        and lower(faculty) = lower(${faculty})
+        and lower(department) = lower(${department})
+        and id <> ${id}
+      limit 1
+    `
+    if (other) {
+      const error = new Error(`This department already has a Head of Department (${other.full_name || 'another user'}). Only one HOD is allowed in each department.`)
+      error.status = 400
+      throw error
+    }
+  }
+}
+
 async function saveUser(tx, id, data) {
   const cols = userColumns(data)
-  const [existing] = await tx`select id from users where id = ${id}`
+  const [existing] = await tx`select * from users where id = ${id}`
+  const accountType = String(cols.account_type || existing?.account_type || 'staff').toLowerCase()
+  const faculty = has(data, 'faculty') ? textOrEmpty(data.faculty) : (existing?.faculty || '')
+  const department = has(data, 'department') ? textOrEmpty(data.department) : (existing?.department || '')
+  if (accountType === 'vc') {
+    cols.faculty = ''
+    cols.department = ''
+  }
+  await assertRolePlacement(tx, id, accountType, accountType === 'vc' ? '' : faculty, accountType === 'vc' ? '' : department)
   if (!existing) {
     if (!cols.email) throw new Error('email is required')
     cols.id = id

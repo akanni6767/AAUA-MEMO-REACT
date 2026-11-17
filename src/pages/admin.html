@@ -2070,6 +2070,7 @@ function openEditUser(uid){
     deptSel.innerHTML='<option value="">— Select Faculty first —</option>';
   }
   document.getElementById('editUserModalOverlay').classList.add('open');
+  applyRoleOfficeFields(user.accountType||'staff','euFaculty','euDepartment');
 }
 
 document.getElementById('closeEditUserModal')?.addEventListener('click',()=>document.getElementById('editUserModalOverlay').classList.remove('open'));
@@ -2085,13 +2086,17 @@ document.getElementById('saveEditUserBtn')?.addEventListener('click',async()=>{
   const department=document.getElementById('euDepartment').value;
   const errDiv=document.getElementById('euError');
   if(!fullName){errDiv.innerText='Full name is required.';return;}
+  const officeFaculty=accountType==='vc'?'':faculty;
+  const officeDepartment=accountType==='vc'?'':department;
+  const conflict=await roleConflict(accountType, officeFaculty, officeDepartment, uid);
+  if(conflict){errDiv.innerText=conflict;showToast(conflict,true);return;}
   const btn=document.getElementById('saveEditUserBtn');
   btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Saving…';
   try{
-    await db.collection('allUsers').doc(uid).set({fullName,accountType,role,faculty,department},{merge:true});
-    try{await db.collection('userProfiles').doc(uid).set({fullName,accountType,role,faculty,department,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){}
+    await db.collection('allUsers').doc(uid).set({fullName,accountType,role,faculty:officeFaculty,department:officeDepartment},{merge:true});
+    try{await db.collection('userProfiles').doc(uid).set({fullName,accountType,role,faculty:officeFaculty,department:officeDepartment,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){}
     const idx=allUsersData.findIndex(u=>u.uid===uid);
-    if(idx>-1) Object.assign(allUsersData[idx],{fullName,accountType,role,faculty,department});
+    if(idx>-1) Object.assign(allUsersData[idx],{fullName,accountType,role,faculty:officeFaculty,department:officeDepartment});
     document.getElementById('editUserModalOverlay').classList.remove('open');
     filterUsers();showToast('User updated successfully');
   }catch(err){errDiv.innerText=err.message;}
@@ -2451,12 +2456,47 @@ function resetMemoForm(){
 /* ══════════════════════════════════════════════════════════
    CREATE USER
 ══════════════════════════════════════════════════════════ */
+function applyRoleOfficeFields(type, facultyId, deptId){
+  const faculty=document.getElementById(facultyId);
+  const dept=document.getElementById(deptId);
+  if(!faculty||!dept) return;
+  const vc=(type||'').toLowerCase()==='vc';
+  faculty.disabled=vc;
+  dept.disabled=vc;
+  if(vc){
+    faculty.value='';
+    dept.innerHTML='<option value="">Not applicable for VC</option>';
+  }
+}
+async function roleConflict(accountType, faculty, department, exceptUid){
+  const type=(accountType||'staff').toLowerCase();
+  const snap=await db.collection('allUsers').get();
+  const users=[];
+  snap.forEach(d=>users.push({uid:d.id,...d.data()}));
+  if(type==='vc' && users.some(u=>u.uid!==exceptUid && (u.accountType||'').toLowerCase()==='vc'))
+    return 'The university already has a Vice Chancellor. Only one VC is allowed.';
+  if(type==='dean'){
+    if(!faculty) return 'A Dean must belong to a faculty.';
+    const found=users.find(u=>u.uid!==exceptUid && (u.accountType||'').toLowerCase()==='dean' && (u.faculty||'').toLowerCase()===faculty.toLowerCase());
+    if(found) return `This faculty already has a Dean (${found.fullName||'another user'}). Only one Dean is allowed in each faculty.`;
+  }
+  if(type==='hod'){
+    if(!faculty||!department) return 'A Head of Department must belong to a faculty and a department.';
+    const found=users.find(u=>u.uid!==exceptUid && (u.accountType||'').toLowerCase()==='hod' && (u.faculty||'').toLowerCase()===faculty.toLowerCase() && (u.department||'').toLowerCase()===department.toLowerCase());
+    if(found) return `This department already has a Head of Department (${found.fullName||'another user'}). Only one HOD is allowed in each department.`;
+  }
+  return '';
+}
 document.querySelectorAll('.account-type-card').forEach(card=>{
   card.addEventListener('click',()=>{
     document.querySelectorAll('.account-type-card').forEach(c=>c.classList.remove('selected'));
     card.classList.add('selected');
     document.getElementById('cuAccountType').value=card.dataset.type;
+    applyRoleOfficeFields(card.dataset.type,'cuFaculty','cuDepartment');
   });
+});
+document.getElementById('euAccountType')?.addEventListener('change',e=>{
+  applyRoleOfficeFields(e.target.value,'euFaculty','euDepartment');
 });
 
 function checkPwdStrength(pwd){
@@ -2518,14 +2558,18 @@ document.getElementById('cuSubmitBtn')?.addEventListener('click',async()=>{
   if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showCuResult('Enter a valid email address.','error');return;}
   if(!password||password.length<6){showCuResult('Password must be at least 6 characters.','error');return;}
   if(password!==confirm){showCuResult('Passwords do not match.','error');return;}
+  const officeFaculty=acctType==='vc'?'':faculty;
+  const officeDepartment=acctType==='vc'?'':department;
+  const conflict=await roleConflict(acctType, officeFaculty, officeDepartment);
+  if(conflict){showCuResult(conflict,'error');return;}
 
   btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating Account...';
   try{
     const created=await auth.createUser({email,password,displayName:fullName});
     const newUid=created.uid;
-    const profileData={fullName,email,phone,dateOfBirth:dob,gender,staffId,faculty,department,office,role:role||acctType,accountType:acctType,profilePictureUrl:'',primaryColor:'#0f172b',secondaryColor:'#3b5fcf',darkMode:false,createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    const profileData={fullName,email,phone,dateOfBirth:dob,gender,staffId,faculty:officeFaculty,department:officeDepartment,office,role:role||acctType,accountType:acctType,profilePictureUrl:'',primaryColor:'#0f172b',secondaryColor:'#3b5fcf',darkMode:false,createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
     await db.collection('userProfiles').doc(newUid).set(profileData);
-    await db.collection('allUsers').doc(newUid).set({uid:newUid,fullName,email,phone,faculty,department,accountType:acctType,role:role||acctType,profilePictureUrl:'',createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),active:true});
+    await db.collection('allUsers').doc(newUid).set({uid:newUid,fullName,email,phone,faculty:officeFaculty,department:officeDepartment,accountType:acctType,role:role||acctType,profilePictureUrl:'',createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),active:true});
     await db.collection('dashboardStats').doc(newUid).set({totalReceived:0,totalOpened:0,totalUnread:0,awaitingAction:0,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     showCuResult(`Account created for ${fullName} (${email}) · Type: ${acctType.toUpperCase()}`,'success');
     resetCreateUserForm();

@@ -1384,7 +1384,7 @@ function populateSettingsForm(){
   db.collection('userProfiles').doc(currentUser.uid).get().then(snap=>{
     if(!snap.exists)return;const d=snap.data();
     document.getElementById('sFullName').value=d.fullName||'';document.getElementById('sEmail').value=d.email||currentUser.email||'';document.getElementById('sRole').value=d.role||'';document.getElementById('sDOB').value=d.dateOfBirth||'';document.getElementById('darkModeToggle').checked=!!d.darkMode;
-    const fs=document.getElementById('sFaculty');fs.value=d.faculty||'';const ds=document.getElementById('sDepartment');if(d.faculty){ds.innerHTML=buildDeptOptions(d.faculty,d.department||'');}else{ds.innerHTML='<option value="">— Select Faculty first —</option>';}
+    const fs=document.getElementById('sFaculty');fs.value='';fs.disabled=true;const ds=document.getElementById('sDepartment');ds.innerHTML='<option value="">Not applicable</option>';ds.disabled=true;
     if(d.notifications){document.getElementById('notifNewMemo').checked=!!d.notifications.newMemo;document.getElementById('notifAction').checked=!!d.notifications.actionRequired;document.getElementById('notifAnnounce').checked=!!d.notifications.announcements;document.getElementById('notifEmail').checked=!!d.notifications.email;}
     if(d.profilePictureUrl){const c=document.getElementById('settingsAvatarCircle');document.getElementById('settingsAvatarIcon').style.display='none';let img=c.querySelector('img');if(!img){img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';c.appendChild(img);}img.src=d.profilePictureUrl;}
     syncPickerUI(d.primaryColor||'#0f172b',d.secondaryColor||'#3b5fcf');

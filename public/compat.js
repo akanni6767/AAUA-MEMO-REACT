@@ -330,9 +330,9 @@
     credential: function (email, password) { return { email: email, password: password } }
   }
 
-  function spinButton(btn, promise) {
+  function spinButton(btn, promise, originalHtml) {
     if (!btn || !promise || typeof promise.then !== 'function') return promise
-    var html = btn.innerHTML
+    var html = originalHtml == null ? btn.innerHTML : originalHtml
     var timer = setTimeout(function () {
       if (!btn.isConnected || btn.dataset.aauaBusy) return
       btn.dataset.aauaBusy = '1'
@@ -341,9 +341,11 @@
     }, 120)
     var finish = function () {
       clearTimeout(timer)
-      if (!btn.dataset.aauaBusy || !btn.isConnected) return
-      btn.disabled = false
-      btn.innerHTML = html
+      if (!btn.isConnected) return
+      if (btn.dataset.aauaBusy || /fa-spinner/.test(btn.innerHTML)) {
+        btn.disabled = false
+        btn.innerHTML = html
+      }
       delete btn.dataset.aauaBusy
     }
     promise.then(finish, finish)
@@ -355,7 +357,8 @@
     if (type === 'click' && this && this.tagName === 'BUTTON' && typeof fn === 'function' && !fn.__aauaBusy) {
       var button = this
       var wrapped = function (event) {
-        return spinButton(button, fn.call(button, event))
+        var html = button.innerHTML
+        return spinButton(button, fn.call(button, event), html)
       }
       wrapped.__aauaBusy = true
       return nativeAdd.call(this, type, wrapped, opts)
@@ -369,9 +372,10 @@
     btn.dataset.aauaClick = '1'
     btn.removeAttribute('onclick')
     nativeAdd.call(btn, 'click', function () {
+      var html = btn.innerHTML
       var result
       try { result = (0, eval)(code) } catch (error) { throw error }
-      return spinButton(btn, result)
+      return spinButton(btn, result, html)
     })
   }
 
