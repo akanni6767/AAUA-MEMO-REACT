@@ -125,55 +125,50 @@ function linesFromUsers(users) {
   const sorted = [...users].sort((a, b) => {
     const byRank = recipientRank(a) - recipientRank(b)
     if (byRank) return byRank
-    return recipientLabel(a).localeCompare(recipientLabel(b))
-  })
-  const counts = {}
-  sorted.forEach(user => {
-    const label = recipientLabel(user)
-    counts[label] = (counts[label] || 0) + 1
+    const left = String(a.fullName || a.email || recipientLabel(a))
+    const right = String(b.fullName || b.email || recipientLabel(b))
+    return left.localeCompare(right)
   })
   return sorted.map(user => {
-    const label = recipientLabel(user)
-    const name = String(user.fullName || '').trim()
-    if (counts[label] > 1 && name && name !== label) return `${label} — ${name}`
-    return label
-  })
+    const name = String(user.fullName || user.email || '').trim()
+    const title = recipientLabel(user)
+    if (name && title && name.toLowerCase() !== title.toLowerCase()) return `${name} — ${title}`
+    return name || title || 'Staff'
+  }).filter(Boolean)
 }
 
-function cachedUsers(uids) {
-  const cache = window.allUsersData
-  if (!Array.isArray(cache) || !cache.length) return null
-  const byId = new Map(cache.map(user => [user.uid || user.id, user]))
-  const found = uids.map(id => byId.get(id)).filter(Boolean)
-  return found.length === uids.length ? found : null
+async function allUserRecords() {
+  if (!window.db) return []
+  const snap = await window.db.collection('allUsers').get()
+  const users = []
+  snap.forEach(doc => users.push({ uid: doc.id, ...doc.data() }))
+  return users
 }
 
 async function distributionFor(uids) {
   const ids = [...new Set((uids || []).filter(Boolean))]
   if (!ids.length) return []
-  const cached = cachedUsers(ids)
-  if (cached) return linesFromUsers(cached)
-  const db = window.db
-  const firebase = window.firebase
-  if (!db || !firebase?.firestore?.FieldPath) return []
-  const users = []
-  for (let index = 0; index < ids.length; index += 30) {
-    const chunk = ids.slice(index, index + 30)
-    const snap = await db.collection('allUsers')
-      .where(firebase.firestore.FieldPath.documentId(), 'in', chunk)
-      .get()
-    snap.forEach(doc => users.push({ uid: doc.id, ...doc.data() }))
-  }
-  return linesFromUsers(users)
+  const users = await allUserRecords()
+  const wanted = new Set(ids)
+  return linesFromUsers(users.filter(user => wanted.has(user.uid || user.id)))
 }
 
 async function withDistribution(memo) {
   const enriched = await enrichFaculty(memo)
+  const users = await allUserRecords()
+  if (memo.recipientMode === 'all' && users.length) {
+    return { ...enriched, distribution: linesFromUsers(users) }
+  }
+  const ids = [...new Set((memo.recipientUids || []).filter(Boolean))]
+  if (ids.length && users.length) {
+    const wanted = new Set(ids)
+    const selected = users.filter(user => wanted.has(user.uid || user.id))
+    if (selected.length) return { ...enriched, distribution: linesFromUsers(selected) }
+  }
   if (Array.isArray(memo.distribution) && memo.distribution.length) {
     return { ...enriched, distribution: memo.distribution.map(item => String(item)) }
   }
-  const distribution = await distributionFor(memo.recipientUids)
-  return { ...enriched, distribution }
+  return { ...enriched, distribution: await distributionFor(ids) }
 }
 
 function bodyHtml(memo) {
