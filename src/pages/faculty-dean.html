@@ -1450,18 +1450,10 @@ async function deanApprove(memoId,queueDocId,senderUid,subject,senderName,priori
     const mode=memoData.recipientMode||'all';
     const allSnap=await db.collection('allUsers').get();
     const people=[];
-    allSnap.forEach(d=>people.push({uid:d.id,...d.data()}));
-    const byId={};
-    people.forEach(u=>{byId[u.uid]=u;});
-    let finalRecipients=mode==='all'?people.map(u=>u.uid):recipientUids.slice();
-    const senderType=(byId[memoData.senderUid||senderUid]?.accountType||'').toLowerCase();
-    if(senderType==='staff'){
-      finalRecipients=finalRecipients.filter(uid=>{
-        if(uid===(memoData.senderUid||senderUid)) return false;
-        const type=(byId[uid]?.accountType||'').toLowerCase();
-        return type!=='hod'&&type!=='dean'&&type!=='vc';
-      });
-    }
+    allSnap.forEach(d=>people.push(d.id));
+    let finalRecipients=mode==='all'?people.slice():recipientUids.slice();
+    const senderId=memoData.senderUid||senderUid;
+    finalRecipients=finalRecipients.filter(uid=>uid&&uid!==senderId);
 
     // Mark memo as approved and sent
     await db.collection('memos').doc(memoId).update({
