@@ -2377,7 +2377,7 @@ async function submitMemo(isDraft){
         const chunk=recipients.slice(i,i+chunkSize);
         const batch=db.batch();
         chunk.forEach(uid=>{
-          const inboxRef=db.collection('userInbox').doc(uid).collection('memos').doc(ref2.id);
+          const inboxRef=db.collection('userInbox').doc(uid).collection('memos').doc(uid+'_'+ref2.id);
           batch.set(inboxRef,{memoId:ref2.id,subject,priority,category,senderName:memoDoc.senderName,senderUid:currentUser.uid,date,confidential,refNumber:ref,read:false,acknowledged:false,receivedAt:firebase.firestore.FieldValue.serverTimestamp()});
         });
         await batch.commit();

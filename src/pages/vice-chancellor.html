@@ -1357,7 +1357,7 @@ async function submitMemo(isDraft){
     if(!isDraft&&recipients.length){
       for(let i=0;i<recipients.length;i+=400){
         const chunk=recipients.slice(i,i+400);const batch=db.batch();
-        chunk.forEach(uid=>batch.set(db.collection('userInbox').doc(uid).collection('memos').doc(ref2.id),{memoId:ref2.id,subject:subj,priority:pri,category:cat,senderName:mDoc.senderName,senderUid:currentUser.uid,date,confidential:conf,refNumber:ref,read:false,acknowledged:false,receivedAt:firebase.firestore.FieldValue.serverTimestamp()}));
+        chunk.forEach(uid=>batch.set(db.collection('userInbox').doc(uid).collection('memos').doc(uid+'_'+ref2.id),{memoId:ref2.id,subject:subj,priority:pri,category:cat,senderName:mDoc.senderName,senderUid:currentUser.uid,date,confidential:conf,refNumber:ref,read:false,acknowledged:false,receivedAt:firebase.firestore.FieldValue.serverTimestamp()}));
         await batch.commit();
       }
       for(let i=0;i<recipients.length;i+=400){

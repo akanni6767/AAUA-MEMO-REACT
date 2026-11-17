@@ -1255,7 +1255,7 @@ async function submitMemo(isDraft){
     const mDoc={subject:subj,body,refNumber:ref,date,category:cat,priority:pri,recipientMode:mode,recipientUids:recipients,recipientCount:recipients.length,distribution:(window.MemoDialog?await window.MemoDialog.distributionFor(recipients):[]),confidential:conf,status:isDraft?'draft':'sent',senderUid:currentUser.uid,senderName:currentUser.displayName||currentUser.email,createdAt:firebase.firestore.FieldValue.serverTimestamp(),sentAt:isDraft?null:firebase.firestore.FieldValue.serverTimestamp()};
     const ref2=await db.collection('memos').add(mDoc);
     if(!isDraft&&recipients.length){
-      for(let i=0;i<recipients.length;i+=400){const chunk=recipients.slice(i,i+400);const batch=db.batch();chunk.forEach(uid=>batch.set(db.collection('userInbox').doc(uid).collection('memos').doc(ref2.id),{memoId:ref2.id,subject:subj,priority:pri,category:cat,senderName:mDoc.senderName,senderUid:currentUser.uid,date,confidential:conf,refNumber:ref,read:false,acknowledged:false,receivedAt:firebase.firestore.FieldValue.serverTimestamp()}));await batch.commit();}
+      for(let i=0;i<recipients.length;i+=400){const chunk=recipients.slice(i,i+400);const batch=db.batch();chunk.forEach(uid=>batch.set(db.collection('userInbox').doc(uid).collection('memos').doc(uid+'_'+ref2.id),{memoId:ref2.id,subject:subj,priority:pri,category:cat,senderName:mDoc.senderName,senderUid:currentUser.uid,date,confidential:conf,refNumber:ref,read:false,acknowledged:false,receivedAt:firebase.firestore.FieldValue.serverTimestamp()}));await batch.commit();}
       for(let i=0;i<recipients.length;i+=400){const chunk=recipients.slice(i,i+400);const ab=db.batch();chunk.forEach(uid=>{const ar=db.collection('alerts').doc();ab.set(ar,{recipientUid:uid,type:'received',priority:pri,title:pri==='urgent'?`🔴 Urgent Memo: ${subj}`:`New Memo: ${subj}`,body:`From ${mDoc.senderName}`,memoId:ref2.id,read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});});await ab.commit().catch(()=>{});}
       await pushAlert(currentUser.uid,'sent',`Memo Sent: ${subj}`,`Delivered to ${recipients.length} recipient(s).`,pri);
       if(window.aauaNotify) await window.aauaNotify('sent', ref2.id);
@@ -1488,7 +1488,7 @@ async function deanApprove(memoId,queueDocId,senderUid,subject,senderName,priori
       const batch=db.batch();
       chunk.forEach(uid=>{
         batch.set(
-          db.collection('userInbox').doc(uid).collection('memos').doc(memoId),
+          db.collection('userInbox').doc(uid).collection('memos').doc(uid+'_'+memoId),
           deliveryData
         );
       });

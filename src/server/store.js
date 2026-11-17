@@ -599,9 +599,13 @@ async function saveInbox(tx, userId, id, data) {
     received_at: fromTs(data.receivedAt) || new Date(),
   }
   if (has(data, 'refNumber')) row.ref_number = textOrEmpty(data.refNumber)
-  const [existing] = await tx`select id from inbox_items where id = ${id}`
-  if (!existing) await insert(tx, 'inbox_items', row)
-  else await patch(tx, 'inbox_items', 'id', id, row)
+  const [byPair] = await tx`select id from inbox_items where user_id = ${userId} and memo_id = ${memoId}`
+  const [byId] = byPair ? [byPair] : await tx`select id from inbox_items where id = ${id}`
+  if (!byId) await insert(tx, 'inbox_items', row)
+  else {
+    row.id = byId.id
+    await patch(tx, 'inbox_items', 'id', byId.id, row)
+  }
 }
 
 async function saveQueue(tx, reviewerId, memoId, data) {
