@@ -13,6 +13,13 @@ function send(res, status, body) {
 }
 
 function readBody(req) {
+  if (req.body != null && req.body !== '') {
+    if (typeof req.body === 'string') {
+      try { return Promise.resolve(req.body ? JSON.parse(req.body) : {}) }
+      catch { return Promise.reject(Object.assign(new Error('Invalid JSON'), { status: 400 })) }
+    }
+    if (typeof req.body === 'object' && !Buffer.isBuffer(req.body)) return Promise.resolve(req.body)
+  }
   return new Promise((resolve, reject) => {
     const chunks = []
     let size = 0

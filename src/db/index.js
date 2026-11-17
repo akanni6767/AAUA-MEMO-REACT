@@ -12,7 +12,11 @@ export function getSql() {
   if (!client) {
     const url = new URL(process.env.DATABASE_URL)
     url.searchParams.delete('channel_binding')
-    client = postgres(url.toString(), { ssl: 'require', max: 8 })
+    client = postgres(url.toString(), {
+      ssl: 'require',
+      max: process.env.VERCEL ? 1 : 8,
+      idle_timeout: 20,
+    })
   }
   return client
 }
