@@ -1,4 +1,5 @@
 import { prepare, run, runBatch, login, logout, userForToken, changePassword, createUser } from './store.js'
+import { notifyMemo } from './mail.js'
 
 function tokenFrom(req) {
   const header = req.headers.authorization || ''
@@ -85,6 +86,13 @@ export async function handleRequest(req, res) {
       const body = await readBody(req)
       const created = await createUser(body)
       return send(res, 200, created)
+    }
+    if (req.method === 'POST' && url.pathname === '/api/mail') {
+      const user = await userForToken(token)
+      if (!user) return send(res, 401, { message: 'Not signed in', code: 'auth/unauthenticated' })
+      const body = await readBody(req)
+      const result = await notifyMemo({ event: body.event, memoId: body.memoId, comment: body.comment || '' })
+      return send(res, 200, result)
     }
     if (req.method === 'POST' && url.pathname === '/api/fs') {
       const user = await userForToken(token)

@@ -542,7 +542,7 @@
         <div class="mftab" data-filter="read"><i class="fas fa-envelope-open"></i> Read <span class="tab-count" id="inboxCountRead">0</span></div>
       </div>
       <div class="memo-list-toolbar">
-        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="inboxSearch" placeholder="Search by subject or sender…" oninput="filterInbox()"></div>
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="inboxSearch" placeholder="Search by subject, sender, or reference…" oninput="filterInbox()"></div>
         <select class="memo-sort-select" id="inboxSort" onchange="filterInbox()"><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select>
         <div class="memo-count-label" id="inboxCountLabel">Loading…</div>
       </div>
@@ -561,7 +561,7 @@
         <div class="mftab" data-filter="urgent"><i class="fas fa-bolt"></i> Urgent <span class="tab-count" id="outboxCountUrgent">0</span></div>
       </div>
       <div class="memo-list-toolbar">
-        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="outboxSearch" placeholder="Search by subject…" oninput="filterOutbox()"></div>
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="outboxSearch" placeholder="Search by subject or reference…" oninput="filterOutbox()"></div>
         <select class="memo-sort-select" id="outboxSort" onchange="filterOutbox()"><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select>
         <div class="memo-count-label" id="outboxCountLabel">Loading…</div>
       </div>
@@ -574,7 +574,7 @@
     <div class="analytics-container">
       <div class="page-header"><h1><i class="fas fa-chart-line"></i> Analytics</h1><p>Track how many recipients have viewed each memo you sent.</p></div>
       <div class="memo-list-toolbar">
-        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="analyticsSearch" placeholder="Search by subject…" oninput="filterAnalytics()"></div>
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="analyticsSearch" placeholder="Search by subject or reference…" oninput="filterAnalytics()"></div>
         <select class="memo-sort-select" id="analyticsSort" onchange="filterAnalytics()"><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="views">Most Viewed</option></select>
         <div class="memo-count-label" id="analyticsCountLabel">Loading…</div>
       </div>
@@ -603,6 +603,7 @@
   <div class="page" id="pageApprovals">
     <div style="padding:2rem;max-width:1000px;">
       <div class="page-header"><h1><i class="fas fa-clipboard-check"></i> Pending Approvals</h1><p>HOD-approved memos from your faculty awaiting your final approval before delivery to recipients.</p></div>
+      <div class="memo-search-wrap" style="margin:0 0 14px;max-width:420px;"><i class="fas fa-search"></i><input type="text" id="deanApvSearch" placeholder="Search by subject, sender, or reference…" oninput="filterMemoCards('deanApvSearch','deanApprovalList')"></div>
       <div class="memo-list" id="deanApprovalList"><div class="memo-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading pending approvals…</span></div></div>
     </div>
   </div>
@@ -889,7 +890,7 @@ auth.onAuthStateChanged(async user=>{
 /* ── DEPT MAP ── */
 const FACULTY_DEPT_MAP={
   'Faculty of Arts':['English','History and International Studies','Linguistics and African Languages','Music','Religious Studies','Theatre and Media Arts','Philosophy','Creative Arts'],
-  'Faculty of Science':['Biochemistry','Botany','Chemistry','Computer Science','Mathematics','Microbiology','Physics','Statistics','Zoology'],
+  'Faculty of Science':['Biochemistry','Botany','Chemistry','Mathematics','Microbiology','Physics','Statistics','Zoology'],
   'Faculty of Social and Management Sciences':['Accounting','Banking and Finance','Business Administration','Economics','Mass Communication','Political Science','Psychology','Public Administration','Sociology'],
   'Faculty of Education':['Early Childhood and Primary Education','Educational Administration','Educational Foundations','Guidance and Counselling','Human Kinetics','Library and Information Science','Science Education','Social Science Education'],
   'Faculty of Law':['Business Law','International Law','Jurisprudence','Private and Property Law','Public Law'],
@@ -941,7 +942,7 @@ document.getElementById('navOutbox')?.addEventListener('click',()=>{showPage('pa
 /* ── HELPERS ── */
 function toMs(ts){if(!ts)return 0;if(ts.seconds)return ts.seconds*1000;if(ts instanceof Date)return ts.getTime();return 0;}
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function showToast(msg='Saved',isError=false){const t=document.getElementById('successToast');document.getElementById('toastMsg').innerText=msg;t.style.background=isError?'#e63946':'var(--primary)';t.classList.add('show');if(window.aauaAlert)window.aauaAlert(msg,isError?'error':'success');setTimeout(()=>t.classList.remove('show'),3200);}
+function showToast(msg='Saved',isError=false){const t=document.getElementById('successToast');document.getElementById('toastMsg').innerText=msg;t.style.background=isError?'#e63946':'var(--primary)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
 
 /* ══════════════════════════════════════════════════════════
    VIEW FACULTY (DEAN-SPECIFIC)
@@ -1045,7 +1046,7 @@ function filterInbox(){
   const q=(document.getElementById('inboxSearch')?.value||'').toLowerCase(),sort=document.getElementById('inboxSort')?.value||'newest';
   let data=[...inboxData];
   if(inboxFilter==='unread')data=data.filter(m=>!m.read);else if(inboxFilter==='read')data=data.filter(m=>m.read);else if(inboxFilter==='urgent')data=data.filter(m=>m.priority==='urgent');
-  if(q)data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.senderName||'').toLowerCase().includes(q));
+  if(q)data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.refNumber||'').toLowerCase().includes(q)||(m.senderName||'').toLowerCase().includes(q));
   if(sort==='oldest')data.sort((a,b)=>toMs(a.receivedAt)-toMs(b.receivedAt));else if(sort==='priority'){const o={urgent:0,high:1,normal:2,low:3};data.sort((a,b)=>(o[a.priority]||2)-(o[b.priority]||2));}else data.sort((a,b)=>toMs(b.receivedAt)-toMs(a.receivedAt));
   document.getElementById('inboxCountLabel').textContent=`${data.length} memo${data.length!==1?'s':''}`;renderInboxList(data);
 }
@@ -1091,7 +1092,7 @@ function filterOutbox(){
   const q=(document.getElementById('outboxSearch')?.value||'').toLowerCase(),sort=document.getElementById('outboxSort')?.value||'newest';
   let data=[...outboxData];
   if(outboxFilter==='sent')data=data.filter(m=>m.status==='sent');else if(outboxFilter==='draft')data=data.filter(m=>m.status==='draft');else if(outboxFilter==='urgent')data=data.filter(m=>m.priority==='urgent');
-  if(q)data=data.filter(m=>(m.subject||'').toLowerCase().includes(q));
+  if(q)data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.refNumber||'').toLowerCase().includes(q));
   if(sort==='oldest')data.sort((a,b)=>toMs(a.createdAt)-toMs(b.createdAt));else if(sort==='priority'){const o={urgent:0,high:1,normal:2,low:3};data.sort((a,b)=>(o[a.priority]||2)-(o[b.priority]||2));}else data.sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
   document.getElementById('outboxCountLabel').textContent=`${data.length} memo${data.length!==1?'s':''}`;renderOutboxList(data);
 }
@@ -1141,7 +1142,7 @@ async function loadAnalytics(){
 }
 function filterAnalytics(){
   const q=(document.getElementById('analyticsSearch')?.value||'').toLowerCase(),sort=document.getElementById('analyticsSort')?.value||'newest';
-  let data=[...analyticsData];if(q)data=data.filter(m=>(m.subject||'').toLowerCase().includes(q));
+  let data=[...analyticsData];if(q)data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.refNumber||'').toLowerCase().includes(q));
   if(sort==='oldest')data.sort((a,b)=>toMs(a.createdAt)-toMs(b.createdAt));else if(sort==='views')data.sort((a,b)=>(b.viewCount||0)-(a.viewCount||0));else data.sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
   document.getElementById('analyticsCountLabel').textContent=`${data.length} memo${data.length!==1?'s':''}`;renderAnalyticsList(data);
 }
@@ -1254,9 +1255,10 @@ async function submitMemo(isDraft){
     const mDoc={subject:subj,body,refNumber:ref,date,category:cat,priority:pri,recipientMode:mode,recipientUids:recipients,recipientCount:recipients.length,distribution:(window.MemoDialog?await window.MemoDialog.distributionFor(recipients):[]),confidential:conf,status:isDraft?'draft':'sent',senderUid:currentUser.uid,senderName:currentUser.displayName||currentUser.email,createdAt:firebase.firestore.FieldValue.serverTimestamp(),sentAt:isDraft?null:firebase.firestore.FieldValue.serverTimestamp()};
     const ref2=await db.collection('memos').add(mDoc);
     if(!isDraft&&recipients.length){
-      for(let i=0;i<recipients.length;i+=400){const chunk=recipients.slice(i,i+400);const batch=db.batch();chunk.forEach(uid=>batch.set(db.collection('userInbox').doc(uid).collection('memos').doc(ref2.id),{memoId:ref2.id,subject:subj,priority:pri,category:cat,senderName:mDoc.senderName,senderUid:currentUser.uid,date,confidential:conf,read:false,acknowledged:false,receivedAt:firebase.firestore.FieldValue.serverTimestamp()}));await batch.commit();}
+      for(let i=0;i<recipients.length;i+=400){const chunk=recipients.slice(i,i+400);const batch=db.batch();chunk.forEach(uid=>batch.set(db.collection('userInbox').doc(uid).collection('memos').doc(ref2.id),{memoId:ref2.id,subject:subj,priority:pri,category:cat,senderName:mDoc.senderName,senderUid:currentUser.uid,date,confidential:conf,refNumber:ref,read:false,acknowledged:false,receivedAt:firebase.firestore.FieldValue.serverTimestamp()}));await batch.commit();}
       for(let i=0;i<recipients.length;i+=400){const chunk=recipients.slice(i,i+400);const ab=db.batch();chunk.forEach(uid=>{const ar=db.collection('alerts').doc();ab.set(ar,{recipientUid:uid,type:'received',priority:pri,title:pri==='urgent'?`🔴 Urgent Memo: ${subj}`:`New Memo: ${subj}`,body:`From ${mDoc.senderName}`,memoId:ref2.id,read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});});await ab.commit().catch(()=>{});}
       await pushAlert(currentUser.uid,'sent',`Memo Sent: ${subj}`,`Delivered to ${recipients.length} recipient(s).`,pri);
+      if(window.aauaNotify) await window.aauaNotify('sent', ref2.id);
     }
     showR(isDraft?'Draft saved.':`Memo sent to ${recipients.length} recipient(s).`,'success');if(!isDraft)resetMemoForm();
   }catch(err){showR(err.message,'error');}
@@ -1395,7 +1397,7 @@ async function loadDeanPendingApprovals(){
               <span class="apv-badge hod-approved">HOD Approved — Awaiting Your Approval</span>
             </div>
             <div class="memo-card-subject">${m.subject||'(No Subject)'}</div>
-            <div class="memo-card-preview">${m.senderDepartment||''} · ${m.recipientCount||0} recipients · HOD: ${m.hodName||'HOD'}</div>
+            <div class="memo-card-preview">${m.refNumber||'—'} · ${m.senderDepartment||''} · ${m.recipientCount||0} recipients · HOD: ${m.hodName||'HOD'}</div>
           </div>
           <i class="fas fa-chevron-down expand-chevron"></i>
         </div>
@@ -1476,6 +1478,7 @@ async function deanApprove(memoId,queueDocId,senderUid,subject,senderName,priori
       senderName:memoData.senderName||senderName,
       senderUid:memoData.senderUid||senderUid,
       date:memoData.date||'',
+      refNumber:memoData.refNumber||'',
       confidential:memoData.confidential||false,
       read:false,
       acknowledged:false,
@@ -1522,6 +1525,7 @@ async function deanApprove(memoId,queueDocId,senderUid,subject,senderName,priori
     // Notify original sender
     await pushAlert(senderUid,'sent',`Memo Approved & Delivered: ${mSubject}`,
       `Your memo was approved by the Dean and delivered to ${finalRecipients.length} recipient(s).`,mPriority);
+    if(window.aauaNotify) await window.aauaNotify('approved', memoId, { comment });
 
     showToast(`Memo approved and delivered to ${finalRecipients.length} recipient(s)!`);
     loadDeanPendingApprovals();
@@ -1544,6 +1548,7 @@ async function deanReject(memoId,queueDocId,senderUid,subject){
     await db.collection('approvalQueue').doc(currentUser.uid).collection('pending').doc(queueDocId).delete();
     await pushAlert(senderUid,'approval_request','Memo Rejected by Dean',
       `"${subject}" was rejected by the Dean.${comment?' Reason: '+comment:''}`, 'high');
+    if(window.aauaNotify) await window.aauaNotify('rejected', memoId, { comment });
     showToast('Memo rejected — sender notified');
     loadDeanPendingApprovals();
   }catch(err){showToast(err.message,true);}

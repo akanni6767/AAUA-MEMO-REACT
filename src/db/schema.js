@@ -109,6 +109,7 @@ export const inboxItems = pgTable('inbox_items', {
   senderName: text('sender_name').notNull().default(''),
   senderId: text('sender_id').references(() => users.id),
   memoDate: text('memo_date').notNull().default(''),
+  refNumber: text('ref_number').notNull().default(''),
   confidential: boolean('confidential').notNull().default(false),
   read: boolean('read').notNull().default(false),
   readAt: timestamp('read_at', { withTimezone: true }),

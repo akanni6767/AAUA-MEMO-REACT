@@ -229,6 +229,7 @@ function inboxDoc(row) {
     senderName: row.sender_name,
     senderUid: row.sender_id,
     date: row.memo_date,
+    refNumber: row.ref_number || '',
     confidential: row.confidential,
     read: row.read,
     readAt: ts(row.read_at),
@@ -538,6 +539,7 @@ async function saveInbox(tx, userId, id, data) {
     acknowledged: !!data.acknowledged,
     received_at: fromTs(data.receivedAt) || new Date(),
   }
+  if (has(data, 'refNumber')) row.ref_number = textOrEmpty(data.refNumber)
   const [existing] = await tx`select id from inbox_items where id = ${id}`
   if (!existing) await insert(tx, 'inbox_items', row)
   else await patch(tx, 'inbox_items', 'id', id, row)
@@ -836,6 +838,13 @@ export function prepare() {
 
 async function seed() {
   const sql = getSql()
+  await sql`alter table inbox_items add column if not exists ref_number text not null default ''`
+  await sql`
+    update inbox_items i
+    set ref_number = m.ref_number
+    from memos m
+    where m.id = i.memo_id and i.ref_number = ''
+  `
   const [{ count }] = await sql`select count(*)::int as count from users`
   if (count > 0) return
   const passwordHash = await hashPassword(SEED_PASSWORD)

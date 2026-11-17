@@ -57,45 +57,15 @@
   }
 
   window.aauaAlert = function (message, type) {
-    var old = document.getElementById('aaua-alert')
-    if (old) old.remove()
-    var error = type === 'error'
-    var dark = document.body && document.body.classList.contains('dark')
-    var overlay = document.createElement('div')
-    overlay.id = 'aaua-alert'
-    overlay.setAttribute('role', 'alertdialog')
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:10050;background:rgba(15,23,43,.55);display:flex;align-items:center;justify-content:center;padding:16px;'
-    var box = document.createElement('div')
-    box.style.cssText = 'width:min(440px,100%);background:' + (dark ? '#1e1e21' : '#fff') + ';color:' + (dark ? '#f1f5f9' : '#0f172b') + ';border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.28);font-family:Inter,Outfit,sans-serif;'
-    var head = document.createElement('div')
-    head.style.cssText = 'background:' + (error ? '#9f1239' : '#0f172b') + ';color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;font-weight:700;'
-    head.appendChild(document.createTextNode(error ? 'Please check' : 'Success'))
-    var close = document.createElement('button')
-    close.type = 'button'
-    close.setAttribute('aria-label', 'Close')
-    close.textContent = '\u00d7'
-    close.style.cssText = 'background:transparent;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1;'
-    head.appendChild(close)
-    var body = document.createElement('div')
-    body.style.cssText = 'padding:18px 18px 8px;font-size:15px;line-height:1.5;'
-    body.textContent = message || ''
-    var foot = document.createElement('div')
-    foot.style.cssText = 'padding:12px 18px 18px;text-align:right;'
-    var ok = document.createElement('button')
-    ok.type = 'button'
-    ok.textContent = 'OK'
-    ok.style.cssText = 'background:#0f172b;color:#fff;border:0;border-radius:999px;padding:10px 22px;font-weight:700;cursor:pointer;'
-    foot.appendChild(ok)
-    box.appendChild(head)
-    box.appendChild(body)
-    box.appendChild(foot)
-    overlay.appendChild(box)
-    function dismiss() { if (overlay.parentNode) overlay.remove() }
-    close.addEventListener('click', dismiss)
-    ok.addEventListener('click', dismiss)
-    overlay.addEventListener('click', function (event) { if (event.target === overlay) dismiss() })
-    document.body.appendChild(overlay)
-    ok.focus()
+    if (typeof window.showToast === 'function') window.showToast(message, type === 'error')
+  }
+
+  window.aauaNotify = function (event, memoId, extra) {
+    extra = extra || {}
+    return request('/api/mail', {
+      method: 'POST',
+      body: JSON.stringify({ event: event, memoId: memoId, comment: extra.comment || '' })
+    }).catch(function () { return { sent: 0 } })
   }
 
   window.aauaBindProfilePhoto = function () {
@@ -359,4 +329,138 @@
   window.firebase.auth.EmailAuthProvider = {
     credential: function (email, password) { return { email: email, password: password } }
   }
+
+  function spinButton(btn, promise) {
+    if (!btn || !promise || typeof promise.then !== 'function') return promise
+    var html = btn.innerHTML
+    var timer = setTimeout(function () {
+      if (!btn.isConnected || btn.dataset.aauaBusy) return
+      btn.dataset.aauaBusy = '1'
+      btn.disabled = true
+      if (!/fa-spinner/.test(btn.innerHTML)) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Please wait…'
+    }, 120)
+    var finish = function () {
+      clearTimeout(timer)
+      if (!btn.dataset.aauaBusy || !btn.isConnected) return
+      btn.disabled = false
+      btn.innerHTML = html
+      delete btn.dataset.aauaBusy
+    }
+    promise.then(finish, finish)
+    return promise
+  }
+
+  var nativeAdd = EventTarget.prototype.addEventListener
+  EventTarget.prototype.addEventListener = function (type, fn, opts) {
+    if (type === 'click' && this && this.tagName === 'BUTTON' && typeof fn === 'function' && !fn.__aauaBusy) {
+      var button = this
+      var wrapped = function (event) {
+        return spinButton(button, fn.call(button, event))
+      }
+      wrapped.__aauaBusy = true
+      return nativeAdd.call(this, type, wrapped, opts)
+    }
+    return nativeAdd.call(this, type, fn, opts)
+  }
+
+  function bindOnclick(btn) {
+    if (!btn || btn.dataset.aauaClick || !btn.getAttribute('onclick')) return
+    var code = btn.getAttribute('onclick')
+    btn.dataset.aauaClick = '1'
+    btn.removeAttribute('onclick')
+    nativeAdd.call(btn, 'click', function () {
+      var result
+      try { result = (0, eval)(code) } catch (error) { throw error }
+      return spinButton(btn, result)
+    })
+  }
+
+  window.filterMemoCards = function (inputId, listId) {
+    var q = ((document.getElementById(inputId) || {}).value || '').toLowerCase()
+    var root = document.getElementById(listId)
+    if (!root) return
+    root.querySelectorAll('.memo-card').forEach(function (card) {
+      var text = (card.textContent || '').toLowerCase()
+      card.style.display = !q || text.indexOf(q) !== -1 ? '' : 'none'
+    })
+  }
+
+  function mountRefSearch(navbar) {
+    if (!navbar || navbar.querySelector('.aaua-ref-search') || !navbar.querySelector('#navAvatar')) return
+    var wrap = document.createElement('div')
+    wrap.className = 'aaua-ref-search'
+    wrap.innerHTML = '<button type="button" class="aaua-ref-btn" aria-label="Search by reference number"><i class="fas fa-magnifying-glass"></i></button>' +
+      '<form class="aaua-ref-form" hidden><input type="search" placeholder="Reference number" aria-label="Reference number"></form>' +
+      '<div class="aaua-ref-results" hidden></div>'
+    var avatar = navbar.querySelector('#navAvatar')
+    navbar.insertBefore(wrap, avatar)
+    var btn = wrap.querySelector('.aaua-ref-btn')
+    var form = wrap.querySelector('.aaua-ref-form')
+    var input = form.querySelector('input')
+    var results = wrap.querySelector('.aaua-ref-results')
+    btn.addEventListener('click', function () {
+      var open = form.hidden
+      form.hidden = !open
+      results.hidden = true
+      if (open) input.focus()
+    })
+    form.addEventListener('submit', function (event) {
+      event.preventDefault()
+      var q = input.value.trim().toLowerCase()
+      results.innerHTML = ''
+      if (!q || !window.db) { results.hidden = true; return }
+      results.hidden = false
+      results.textContent = 'Searching…'
+      window.db.collection('memos').get().then(function (snap) {
+        var me = window.currentUser || (window.firebase && firebase.auth().currentUser) || {}
+        var rows = []
+        snap.forEach(function (doc) {
+          var data = doc.data() || {}
+          var ref = String(data.refNumber || '').toLowerCase()
+          if (ref.indexOf(q) === -1) return
+          var type = String(me.accountType || '').toLowerCase()
+          var allowed = type === 'admin' || data.senderUid === me.uid || data.hodUid === me.uid || data.deanUid === me.uid || (data.recipientUids || []).indexOf(me.uid) !== -1
+          if (allowed) rows.push(Object.assign({ id: doc.id }, data))
+        })
+        if (!rows.length) { results.textContent = 'No memo with that reference.'; return }
+        results.innerHTML = ''
+        rows.slice(0, 8).forEach(function (memo) {
+          var item = document.createElement('button')
+          item.type = 'button'
+          item.className = 'aaua-ref-hit'
+          item.textContent = (memo.refNumber || '—') + ' · ' + (memo.subject || 'Memo')
+          item.addEventListener('click', function () {
+            results.hidden = true
+            form.hidden = true
+            if (window.MemoDialog) window.MemoDialog.open(memo)
+          })
+          results.appendChild(item)
+        })
+      }).catch(function (error) {
+        results.textContent = error.message || 'Search failed'
+      })
+    })
+    document.addEventListener('click', function (event) {
+      if (!wrap.contains(event.target)) { form.hidden = true; results.hidden = true }
+    })
+  }
+
+  function scan(root) {
+    ;(root || document).querySelectorAll('button[onclick]').forEach(bindOnclick)
+    document.querySelectorAll('.top-navbar').forEach(mountRefSearch)
+  }
+
+  var style = document.createElement('style')
+  style.textContent = '.aaua-ref-search{position:relative;display:flex;align-items:center;margin-left:auto;margin-right:12px}' +
+    '.aaua-ref-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border,#e2e8f0);background:var(--bg-card,#fff);color:var(--text-heading,#0f172b);cursor:pointer}' +
+    '.aaua-ref-form{position:absolute;right:46px;top:0}' +
+    '.aaua-ref-form input{width:220px;height:38px;border-radius:999px;border:1px solid var(--border,#e2e8f0);padding:0 14px;background:var(--bg-card,#fff);color:var(--text-heading,#0f172b);font:500 14px Inter,sans-serif}' +
+    '.aaua-ref-results{position:absolute;right:0;top:46px;width:min(320px,70vw);background:var(--bg-card,#fff);border:1px solid var(--border,#e2e8f0);border-radius:14px;box-shadow:0 12px 30px rgba(15,23,43,.12);padding:6px;z-index:30}' +
+    '.aaua-ref-hit{display:block;width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;border-radius:10px;cursor:pointer;color:var(--text-heading,#0f172b);font:600 13px Inter,sans-serif}' +
+    '.aaua-ref-hit:hover{background:var(--nav-active-bg,#eef2ff)}'
+  document.head.appendChild(style)
+  if (document.body) scan(document)
+  new MutationObserver(function (records) {
+    records.forEach(function (record) { scan(record.target) })
+  }).observe(document.documentElement, { childList: true, subtree: true })
 })()

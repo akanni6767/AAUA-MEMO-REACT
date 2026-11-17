@@ -828,7 +828,7 @@
         <div class="mftab" data-filter="read"><i class="fas fa-envelope-open"></i> Read <span class="tab-count" id="inboxCountRead">0</span></div>
       </div>
       <div class="memo-list-toolbar">
-        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="inboxSearch" placeholder="Search by subject or sender…" oninput="filterInbox()"></div>
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="inboxSearch" placeholder="Search by subject, sender, or reference…" oninput="filterInbox()"></div>
         <select class="memo-sort-select" id="inboxSort" onchange="filterInbox()">
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -856,7 +856,7 @@
         <div class="mftab" data-filter="urgent"><i class="fas fa-bolt"></i> Urgent <span class="tab-count" id="outboxCountUrgent">0</span></div>
       </div>
       <div class="memo-list-toolbar">
-        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="outboxSearch" placeholder="Search by subject or recipient…" oninput="filterOutbox()"></div>
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="outboxSearch" placeholder="Search by subject, recipient, or reference…" oninput="filterOutbox()"></div>
         <select class="memo-sort-select" id="outboxSort" onchange="filterOutbox()">
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -887,7 +887,7 @@
       </div>
 
       <div class="memo-list-toolbar">
-        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="apvSearch" placeholder="Search by subject…" oninput="filterApprovals()"></div>
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="apvSearch" placeholder="Search by subject or reference…" oninput="filterApprovals()"></div>
         <select class="memo-sort-select" id="apvSort" onchange="filterApprovals()">
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -909,7 +909,7 @@
         <p>Track how many recipients have viewed each memo you sent. Click any memo to see who viewed it.</p>
       </div>
       <div class="memo-list-toolbar">
-        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="analyticsSearch" placeholder="Search by subject…" oninput="filterAnalytics()"></div>
+        <div class="memo-search-wrap"><i class="fas fa-search"></i><input type="text" id="analyticsSearch" placeholder="Search by subject or reference…" oninput="filterAnalytics()"></div>
         <select class="memo-sort-select" id="analyticsSort" onchange="filterAnalytics()">
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -1254,7 +1254,7 @@ let allUsersData = [];
 /* ── Dept map ── */
 const FACULTY_DEPT_MAP = {
   'Faculty of Arts': ['English','History and International Studies','Linguistics and African Languages','Music','Religious Studies','Theatre and Media Arts','Philosophy','Creative Arts'],
-  'Faculty of Science': ['Biochemistry','Botany','Chemistry','Computer Science','Mathematics','Microbiology','Physics','Statistics','Zoology'],
+  'Faculty of Science': ['Biochemistry','Botany','Chemistry','Mathematics','Microbiology','Physics','Statistics','Zoology'],
   'Faculty of Social and Management Sciences': ['Accounting','Banking and Finance','Business Administration','Economics','Mass Communication','Political Science','Psychology','Public Administration','Sociology'],
   'Faculty of Education': ['Early Childhood and Primary Education','Educational Administration','Educational Foundations','Guidance and Counselling','Human Kinetics','Library and Information Science','Science Education','Social Science Education'],
   'Faculty of Law': ['Business Law','International Law','Jurisprudence','Private and Property Law','Public Law'],
@@ -1430,7 +1430,7 @@ function filterInbox(){
   if(inboxFilter==='unread') data=data.filter(m=>!m.read);
   else if(inboxFilter==='read') data=data.filter(m=>m.read);
   else if(inboxFilter==='urgent') data=data.filter(m=>m.priority==='urgent');
-  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.senderName||'').toLowerCase().includes(q));
+  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.refNumber||'').toLowerCase().includes(q)||(m.senderName||'').toLowerCase().includes(q));
   if(sort==='oldest') data.sort((a,b)=>toMs(a.receivedAt)-toMs(b.receivedAt));
   else if(sort==='priority'){ const order={urgent:0,high:1,normal:2,low:3}; data.sort((a,b)=>(order[a.priority]||2)-(order[b.priority]||2)); }
   else data.sort((a,b)=>toMs(b.receivedAt)-toMs(a.receivedAt));
@@ -1541,7 +1541,7 @@ function filterOutbox(){
   if(outboxFilter==='sent') data=data.filter(m=>m.status==='sent');
   else if(outboxFilter==='draft') data=data.filter(m=>m.status==='draft');
   else if(outboxFilter==='urgent') data=data.filter(m=>m.priority==='urgent');
-  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q));
+  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.refNumber||'').toLowerCase().includes(q));
   if(sort==='oldest') data.sort((a,b)=>toMs(a.createdAt)-toMs(b.createdAt));
   else if(sort==='priority'){ const order={urgent:0,high:1,normal:2,low:3}; data.sort((a,b)=>(order[a.priority]||2)-(order[b.priority]||2)); }
   else data.sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
@@ -1659,7 +1659,7 @@ function filterAnalytics(){
   const q=(document.getElementById('analyticsSearch')?.value||'').toLowerCase();
   const sort=document.getElementById('analyticsSort')?.value||'newest';
   let data=[...analyticsData];
-  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q));
+  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.refNumber||'').toLowerCase().includes(q));
   if(sort==='oldest') data.sort((a,b)=>toMs(a.createdAt)-toMs(b.createdAt));
   else if(sort==='views') data.sort((a,b)=>(b.viewCount||0)-(a.viewCount||0));
   else data.sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
@@ -2058,6 +2058,7 @@ async function submitMemo(isDraft){
     // Notify HOD and sender
     await pushAlert(hodUid,'approval_request','Memo Awaiting Your Approval',`${senderName2} submitted: "${subject}"`,priority);
     await pushAlert(currentUser.uid,'submitted','Memo Submitted for Approval',`"${subject}" sent to ${hodName} (HOD) for approval.`,'normal');
+    if(window.aauaNotify) await window.aauaNotify('submitted', ref2.id);
 
     showMemoResult(`Memo submitted for approval. It will be delivered to recipients after your HOD and Dean approve it.`,'success');
     resetMemoForm();
@@ -2492,7 +2493,7 @@ function filterApprovals(){
   else if(approvalsFilter==='hod_approved') data=data.filter(m=>m.approvalStatus==='pending_dean');
   else if(approvalsFilter==='approved') data=data.filter(m=>m.approvalStatus==='approved');
   else if(approvalsFilter==='rejected') data=data.filter(m=>m.approvalStatus==='rejected');
-  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q));
+  if(q) data=data.filter(m=>(m.subject||'').toLowerCase().includes(q)||(m.refNumber||'').toLowerCase().includes(q));
   if(sort==='oldest') data.sort((a,b)=>toMs(a.createdAt)-toMs(b.createdAt));
   else data.sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
   document.getElementById('apvCountLabel').textContent=`${data.length} memo${data.length!==1?'s':''}`;
@@ -2591,7 +2592,7 @@ document.querySelectorAll('#pageApprovals .mftab').forEach(tab=>{
 function showToast(msg='Saved',isError=false){
   const toast=document.getElementById('successToast');document.getElementById('toastMsg').innerText=msg;
   toast.style.background=isError?'#e63946':'var(--primary)';toast.classList.add('show');
-  if(window.aauaAlert) window.aauaAlert(msg,isError?'error':'success');
+  
   setTimeout(()=>toast.classList.remove('show'),3200);
 }
 
